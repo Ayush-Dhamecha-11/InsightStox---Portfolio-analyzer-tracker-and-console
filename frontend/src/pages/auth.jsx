@@ -202,6 +202,9 @@ const toggleForgotPassword = () => {
     if (isLogin) {
       return (
         <>
+        <div className="authlogo">
+            <img src={LogoDark} alt="Dark Mode Logo" />
+          </div>
           <div className="title-text">
             <h1>{isForgotPassword ? 'Reset your password' : 'Login to your account'}</h1>
           </div>
@@ -236,6 +239,9 @@ const toggleForgotPassword = () => {
     } else {
       return (
         <>
+        <div className="authlogo">
+            <img src={LogoDark} alt="Dark Mode Logo" />
+          </div>
           <div className="title-text">
             <h1>{isOtpSent ? 'Check your email for the OTP' : 'Create your account'}</h1>
           </div>
@@ -264,10 +270,10 @@ const toggleForgotPassword = () => {
     }
   };
   return (
-    <div className="container">
+
       <div className="auth_main_div px-0 py-0">
        <Link to ="/">
-         <button className="backToHome"  onClick={() => {sessionStorage.removeItem("isLogin");sessionStorage.removeItem("forgotpassword");resetFormStates();}}>← Back to Home</button>
+         <button className="backToHome"  onClick={() => {sessionStorage.removeItem("isLogin");sessionStorage.removeItem("forgotpassword");resetFormStates();}}> <i class="pi pi-arrow-left"></i> Back</button>
          </Link>
         <div className="left_inner_div">
          
@@ -283,15 +289,18 @@ const toggleForgotPassword = () => {
           </div>
         </div>
 
-        <div className="right_inner_div">
-          <div className="logo">
-            <img src={LogoDark} alt="Dark Mode Logo" />
+   
+          
+         <div className="right_inner_div">
+          <div className="auth_form_wrapper">
+            <div className="auth_form">
+              {renderForm()}
+            </div>
+            </div>
           </div>
-          <div className="auth_form">
-            {renderForm()}
-          </div>
+
         </div>
-      </div>
-    </div>
+      
+
   );
 };
