@@ -1,5 +1,6 @@
 import { searchUserByEmail } from "../../db/findUser.js";
 import { updatePassword } from "../../db/updatePassword.js";
+import { checkPasswordSyntax } from "../../utils/checkUserSyntax.js";
 import bcrypt from "bcrypt";
 export const ResetPassword = async (req, res) => {
     const { email, password, newPassword } = req.body;
@@ -9,6 +10,10 @@ export const ResetPassword = async (req, res) => {
     }
 
     try {
+        const newPasswordValidation = checkPasswordSyntax(password);
+        if(!newPasswordValidation.success){
+            return res.status(401).json({success: false, message: "Password Syntex Not Valid"});
+        }
         const userResult = await searchUserByEmail(email);
         console.log(userResult);
         if (userResult.length === 0) {
