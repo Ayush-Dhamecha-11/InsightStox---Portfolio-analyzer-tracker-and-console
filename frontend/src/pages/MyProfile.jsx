@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../pages/MyProfile.css";
 import "primeicons/primeicons.css";
-import { checkPasswordStrength } from "../components/authFunctions.jsx";
+import { checkPasswordStrength } from "../utils/validation.js";
 import Navbar from "../components/Navbar.jsx";
 import profileImg from "../assets/profileicon.svg";
 import GoToArrow from "../assets/routeicon.svg";
