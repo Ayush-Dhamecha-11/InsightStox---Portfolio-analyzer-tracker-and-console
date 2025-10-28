@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GoToArrow from "../assets/routeicon.svg";
 import profileImg from "../assets/profileicon.svg";
-import LogoutSym from "../assets/LogoutSym.png";
+import LogoutSym from "../assets/logoutSym.png";
 import "./Sidebar.css";
 
 //const navigate = useNavigate();
