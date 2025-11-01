@@ -9,6 +9,8 @@ import { Dashboard } from './pages/Dashboard';
 import { MyProfile} from './pages/MyProfile';
 import AiInsight from './pages/AiInsight';
 import {createBrowserRouter,RouterProvider} from "react-router-dom";
+import {DataPrivacy} from "./pages/DataPrivacy";
+import {ActivitySessionHistory} from "./pages/ActivitySessionHistory";
 const router = createBrowserRouter(
   [
     {
@@ -30,6 +32,14 @@ const router = createBrowserRouter(
     ,{
       path:"/aiInsight",
       element:<AiInsight/>
+    },
+    {
+      path:"/dataPrivacy",
+      element:<DataPrivacy/>
+    },
+    {
+      path:"/activitySessionHistory",
+      element:<ActivitySessionHistory/>
     }
   ]
 );

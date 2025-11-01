@@ -1,0 +1,358 @@
+/* ===== General Page Layout ===== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+.Page {
+    height: 100%;
+    width: 100%;
+    background-color: #000;
+}
+
+hr {
+    border: none;
+    border-top: 3px solid #28282889;
+    margin-right: 3rem;
+    margin-top: 1.8rem;
+}
+
+
+.recent-activities {
+  margin: 1rem 3rem;
+}
+
+.activity-item {
+  font-size: 16px;
+  color: #fff;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* space between text, dot, and date */
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background-color: #fff; /* same color for all dots */
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.date {
+  font-size: 14px;
+  color: #fff;
+}
+
+
+.Container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    background-color: #000;
+}
+
+.Container::-webkit-scrollbar {
+    display: none;
+}
+
+.MainContent {
+    width: 60%;
+    min-height: 1080px;
+    margin-top: 7rem;
+    margin-bottom: 30px;
+    border: 4px solid #28282889;
+    background-color: #0f0f0f;
+
+}
+.MainContent h1 {
+    margin-bottom: 4rem;
+    margin-top: 3rem;
+    margin-left: 3rem;
+    font-size: 2.2rem;
+    display: flex;
+    justify-content: space-between;
+
+}
+.activity-and-session {
+    margin-bottom: 4rem;
+    margin-top: 3rem;
+    margin-left: 3rem;
+    font-size: 2rem;
+    display: flex;
+    font-weight: 500;
+    justify-content: space-between;
+
+}
+
+/* ===== Activity & Session History ===== */
+.activity-session-history {
+  margin-top: 20px;
+}
+.header-section {
+    display: flex;
+    flex-direction: column;
+    margin-left: 3rem;
+    color: #fff;
+    font-size: 1.25rem;
+}
+.header-section p{
+    display: flex;
+    flex-direction: column;
+    color: #888;
+    font-size: 0.85rem;
+}
+
+.header-section seemore{
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.95rem;
+  margin-right: 3rem;
+}
+.seemore{
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.95rem;
+  height: 30px;
+  white-space: nowrap;
+  margin-left: 45rem;
+  margin-right: 3rem;
+  background-color: #0f0f0f;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.seemore:hover{
+  color: #888;
+}
+
+.signout{
+  display: flex;
+  justify-content: flex-end;
+  margin-left: auto;
+  margin-right: 3rem;
+  font-size: 0.95rem;
+  color: #888;
+  cursor: pointer;;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+}
+
+.signout:hover{
+  border: 1px solid #00c46a;
+  color:#fff;
+  background-color: transparent;
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+  transition: 0.3s;
+}
+.base-section {
+    font-size: 1rem;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.6rem;
+    margin-top: 4rem;
+}
+.activity-session-history h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 15px;
+  padding-bottom: 6px;
+}
+
+.activity-session-history h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 20px 0 12px 0;
+}
+
+.activity-session-history p {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+.more-info{
+	margin-right: 4rem;
+	height: 16px;
+	width: 16px;
+	cursor: pointer;
+  margin-left: 0.5rem;
+}
+/* Activity Items - No boxes */
+.activity-item {
+  padding: 8px 0;
+  margin-bottom: 0;
+  margin-left: 3rem;
+  font-size: 1rem;
+  font-weight: 100;
+}
+.security-alerts{
+  padding: 8px 0;
+  margin-bottom: 0;
+  font-size: 1rem;
+  font-weight: 100;
+}
+.briefer-activity-item {
+  padding: 8px 0;
+  margin-bottom: 0;
+  margin-left: 3rem;
+  font-size: 1rem;
+  color: #888;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-item h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.activity-item .timestamp {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+/* Session Items - No boxes */
+.session-item {
+  padding: 8px 0;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.session-item:last-child {
+  border-bottom: none;
+}
+
+.session-info h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.session-info .last-active {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+/* Security Alerts - No boxes */
+.security-alerts {
+  padding: 0;
+  margin: 15px 0;
+}
+
+.security-alert-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.security-alert-item:last-child {
+  border-bottom: none;
+}
+
+.security-alert-text {
+  font-size: 0.8rem;
+  color: #fff;
+}
+
+.security-alert-date {
+  font-size: 0.7rem;
+  color: #888;
+}
+
+/* Action Buttons - Updated positioning */
+.activity-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.download-activity {
+  background-color: #00c853;
+  color: #000;
+  display: block;
+  height: 35px;
+  white-space: nowrap;
+	margin-right: 3rem;
+  border: 1px solid #00c853;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: 0.3s;
+}
+
+.download-activity:hover {
+  background-color: transparent;
+  color: #fff;
+}
+
+.clear-history {
+  background-color: #c81b00;
+  color: #fff;
+  display: block;
+  height: 35px;
+  white-space: nowrap;
+	margin-right: 3rem;
+  border: 1px solid #c81b00;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: 0.3s;
+}
+
+.clear-history:hover {
+  background-color: transparent;
+  color: #fff;
+}
+
+/* Sign Out All - Smaller and left aligned */
+.sign-out-all {
+  background-color: #1e1e1e;
+  color: #fff;
+  display: block;
+  height: 35px;
+  margin-top: 0.5rem;
+  white-space: nowrap;
+	margin-right: 3rem;
+  margin-left: 3rem;
+  border: 2px solid #1e1e1e;
+  padding: 0.3rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: 0.3s;
+}
+
+.sign-out-all:hover {
+  background-color: transparent;
+}
+
+/* Divider */
+.divider {
+  border: none;
+    border-top: 3px solid #28282889;
+    margin-right: 3rem;
+    margin-left: 3rem;
+    margin-top: 1.8rem;
+    margin-bottom: 1.8rem;
+}
