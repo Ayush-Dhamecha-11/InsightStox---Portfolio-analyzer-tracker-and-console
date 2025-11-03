@@ -78,13 +78,6 @@ export const ActivitySessionHistory = () => {
     console.log("Clearing activity history...");
   }, []);
 
-  const handleDownloadData = useCallback(() => {
-    setDownloadRequested(true);
-  }, []);
-
-  const handleDeleteAccount = useCallback(() => {
-    setDeleteRequested(true);
-  }, []);
 
   return (
     <div className="Page">
@@ -118,7 +111,7 @@ export const ActivitySessionHistory = () => {
                   {activity.action}
                    <span className="dot"></span>
                     <span className="date">{activity.date}</span>
-                    <div className="signout">
+                    <div className="signout" onClick={handleSignOut}>
                       Sign Out
                     </div>
                 </div>
