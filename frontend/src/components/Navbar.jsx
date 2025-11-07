@@ -1,5 +1,6 @@
 import React, { useState,useEffect } from "react";
-import { Link } from "react-router-dom";
+import axios from "axios";
+import { Link, Navigate } from "react-router-dom";
 import ButtonDiv from "./ButtonDiv.jsx";
 import web_logo_without_bg_darkmode from "../assets/web_logo_without_bg_darkmode.png";
 import web_logo_without_bg_lightmode from "../assets/web_logo_without_bg_lightmode.png";
@@ -7,25 +8,49 @@ import themetoggledark from "../assets/themetoggledark.svg";
 import profileicon from "../assets/profileicon.svg";
 import routeicon from "../assets/routeicon.svg";
 import exiticon from "../assets/exiticon.svg";
+import { useNavigate } from "react-router-dom";
 import "./Navbar.css";
+// import tailwind from "tailwindcss/tailwind.css";
 const Navbar = ({ darkMode, setDarkMode, pageType, profileData = {} }) => {
+  
+  axios.defaults.withCredentials = true;
+  const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false); 
 
   const handleProfileClick = () => setIsProfileOpen(true);
   const handleProfileClose = () => setIsProfileOpen(false);
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen); 
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
 
-useEffect(() => {
+  const handleLogout = async () => {
+        try{
+            await axios.post(import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/logout", {withCredentials: true});
+            navigate("/");
+        }
+        catch(err){
+            console.error("Error during logout:", err.response?.data?.message || err.message);
+        }
+  }
+
+  function checkPageType(){
+    if(pageType !== "/" && pageType !== "my-profile" && pageType !== "data-privacy" && pageType !== "preferences" && pageType !== "help-support" && pageType !== "activity"){
+      return true;
+    }
+    else return false;
+}
+  useEffect(() => {
   const handleResize = () => {
-    if (window.innerWidth > 1100 && isMenuOpen) setIsMenuOpen(false);
-    if (window.innerWidth < 530 && isProfileOpen) setIsProfileOpen(false);
+    if (window.innerWidth > 1100 && isMenuOpen) {
+      setIsMenuOpen(false);
+    }
   };
 
   window.addEventListener("resize", handleResize);
   return () => window.removeEventListener("resize", handleResize);
-}, [isMenuOpen, isProfileOpen]);
-
+}, [isMenuOpen]);
   return (
     <>
       {pageType === "dashboard" && isProfileOpen && (
@@ -38,7 +63,7 @@ useEffect(() => {
         </div>
 
         <div className="center_btn">
-          {pageType === "home" ? (
+          {pageType === "/" ? (
             <>
               <a className="navbar_btn" href="#feature">Features</a>
               <a className="navbar_btn" href="#HowItWorks">How it Works?</a>
@@ -46,34 +71,32 @@ useEffect(() => {
             </>
           ) : (
             <>
-              <a className="navbar_btn" href="#">Dashboard</a>
-              <a className="navbar_btn" href="#">Portfolio</a>
-              <a className="navbar_btn" href="#">AI Insights</a>
-              <a className="navbar_btn" href="#">Compare Stocks</a>
-              <a className="navbar_btn" href="#">Watchlist</a>
+              <Link className="navbar_btn" to="/dashboard">Dashboard</Link>
+              <Link className="navbar_btn" to="#">Portfolio</Link>
+              <Link className="navbar_btn" to="/ai-insight">AI Insights</Link>
+              <Link className="navbar_btn" to="#">Compare Stocks</Link>
+              <Link className="navbar_btn" to="/watchlist">Watchlist</Link>
             </>
           )}
         </div>
 
         <div className="right_btn">
 
-          {pageType === "home" && (
+          {pageType === "/" && (
             <Link to="/auth" onClick={() => {sessionStorage.setItem("isLogin", "true");
                                               sessionStorage.setItem("forgotpassword", "false");}}>
-              <ButtonDiv className="login_btn navbar_btn" val="Log In" />
+              <ButtonDiv className="login_btn" val="Log In" />
             </Link>
           )}
 
-          {pageType === "dashboard" && (
-            <div className="profile_btn">
-              <button onClick={handleProfileClick}>
-                <img src={profileicon} alt="Profile" />
-              </button>
-            </div>
-          )}
+          <div className="profile_btn">
+            <button onClick={handleProfileClick}>
+              <img src={profileicon} alt="Profile" style={checkPageType() ? {visibility: "visible"} : {visibility: "hidden"}}/>
+            </button>
+          </div>
 
           <div className="toggle_btn">
-            <button onClick={() => setDarkMode(!darkMode)}>
+            <button style = {{display : "none"}}onClick={() => setDarkMode(!darkMode)}>
               <img src={themetoggledark} alt="Toggle Theme" />
             </button>
           </div>
@@ -83,42 +106,32 @@ useEffect(() => {
       </div>
            {isMenuOpen && (
         <div className="mobile_menu ">
-          {pageType === "home" ? (
+          {pageType === "/" ? (
             <div className="menuoptions">
               <ul>
                  <Link to="/auth" onClick={() => {sessionStorage.setItem("isLogin", "true");
                                               sessionStorage.setItem("forgotpassword", "false");}}>
-                <li>Log In <img src={routeicon} alt="" /></li>
+                <li>Log In</li>
                 </Link>
-                <hr />
-                <li><a href="#feature">Features </a></li>
-                <hr />
-                <li><a href="#HowItWorks">How it Works?</a></li> 
-                <hr />
-                <li className="lastli"><a href="#FAQs">FAQs</a></li>
+                <a href="#feature"><li>Features</li></a>
+                <a href="#HowItWorks"><li>How it Works?</li></a>
+                <a href="#FAQs"><li className="lastli">FAQs</li></a>
               </ul>
-              </div>
+            </div>
           ) : (
             <div className="menuoptions">
               <ul>
-
-              <li className="profileinmenu">Profile</li>
-              <hr className="profileinmenu" />
-              <li><a href="#">Dashboard</a> </li>
-              <hr />
-              <li><a href="#">Portfolio</a></li>
-              <hr />
-              <li><a href="#">AI Insights</a></li>
-              <hr />
-              <li><a href="#">Compare Stocks</a></li>
-              <hr />
-              <li className="lastli"><a href="#">Watchlist</a></li>
-             </ul> 
+              <Link to="/dashboard"><li>Dashboard </li></Link>
+              <Link to="#"><li>Portfolio</li></Link>
+              <Link to="/ai-insight"><li>AI Insights</li></Link>
+              <Link to="#"><li>Compare Stocks</li></Link>
+              <Link to="#"><li className="lastli">Watchlist</li></Link>
+             </ul>
               </div>
           )}
         </div>
       )}
-      {pageType === "dashboard" && isProfileOpen && (
+      {isProfileOpen && (
         <div className="profilepopup">
           <div className="popupheading">
             <img src={profileicon} alt="Profile" />
@@ -129,13 +142,10 @@ useEffect(() => {
           </div>
           <div className="popupoptions">
             <ul>
-              <li>My Profile <img src={routeicon} alt="" /></li>
-              <hr/>
-              <li>Manage <img src={routeicon} alt="" /></li>
-              <hr/>
-              <li>Help & Support <img src={routeicon} alt="" /></li>
-              <hr/>
-              <li>Log Out <img src={exiticon} alt="" /></li>
+              <li onClick={() => handleNavigation("/my-profile")}>My Profile <img src={routeicon} alt="" /></li>
+              <li onClick={() => handleNavigation("/data-privacy")}>Manage <img src={routeicon} alt="" /></li>
+              <li onClick={() => handleNavigation("/help-support")}>Help & Support <img src={routeicon} alt="" /></li>
+              <li onClick={handleLogout}>Log Out <img src={exiticon} alt="" /></li>
             </ul>
           </div>
         </div>

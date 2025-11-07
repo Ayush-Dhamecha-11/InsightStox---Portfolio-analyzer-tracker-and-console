@@ -1,97 +1,232 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './Dashboard-Header.css';
 import growthicon from '../assets/growthicon.svg';
 import historyicon from '../assets/historyicon.svg';
+import { useAppContext } from "../context/AppContext.jsx";
+
+//Enable cookies for all axios requests (important for auth sessions)
+axios.defaults.withCredentials = true;
+
+//Backend API URL
+const BACKEND_URL = import.meta.env.VITE_BACKEND_LINK;
+const STOCK_API = `${BACKEND_URL}/api/v1/dashboard/starter`;
 
 const DashboardHeader = () => {
-  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [stocks, setStocks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [typingTimeout, setTypingTimeout] = useState(null);
+  const navigate = useNavigate();
+  const { isSearchActive, setIsSearchActive } = useAppContext();
 
   const handleFocus = () => setIsSearchActive(true);
   const handleClose = () => setIsSearchActive(false);
+
+  // Fetch stock data from backend (session cookie included)
+  const fetchStockData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await axios.get(STOCK_API);
+
+      if (res.data?.data && Array.isArray(res.data.data)) {
+        setStocks(res.data.data.slice(0, 3)); //show top 3 stocks
+        console.log(res.data.data.slice(0, 3))
+      } else {
+        setError('Invalid data format from server.');
+      }
+    } catch (err) {
+      console.error('Error fetching stock data:', err);
+      if (err.response?.status === 401) {
+        setError('Session expired. Please log in again.');
+      } else {
+        setError('Failed to load market data.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    // Clear previous timer
+    if (typingTimeout) clearTimeout(typingTimeout);
+
+    // Debounce execution
+    const timer = setTimeout(() => {
+      if (value.trim().length > 0) {
+        fetchSearchResults(value.trim());
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+    setTypingTimeout(timer);
+    };
+    const fetchSearchResults = async (q) => {
+      try {
+        const res = await axios.get(`${BACKEND_URL}/api/v1/dashboard/searchStock`, {
+          params: { ticker: q },
+          withCredentials: true
+        });
+        if (Array.isArray(res.data?.suggestions)) {
+          setSearchResults(res.data.suggestions);
+          console.log(res.data.suggestions)
+        } else {
+        setSearchResults([]);
+        }
+      } catch (err) {
+        console.error('Search error:', err);
+        setSearchResults([]);
+      }
+    };
+    const handleStockClick = (symbol) => {
+      navigate(`/stockdetails/${symbol}`);
+      setIsSearchActive(false);
+      setQuery('');
+      setSearchResults([]);
+    };
+
+  useEffect(() => {
+    fetchStockData();
+    // Optionally auto-refresh every minute:
+    // const interval = setInterval(fetchStockData, 60000);
+    // return () => clearInterval(interval);
+  }, []);
+    useEffect(() => {
+    const onEsc = (e) => {
+      if (e.key === 'Escape') {
+        setIsSearchActive(false);
+        setQuery('');
+        setSearchResults([]);
+      }
+    };
+
+    window.addEventListener('keydown', onEsc);
+
+    return () => window.removeEventListener('keydown', onEsc);
+  }, []);
+
+  // Loading state
+  if (loading)
+    return (
+      <div className="dashboard-header loading">
+        <p>Loading market data...</p>
+      </div>
+    );
+
+  // Error state
+  if (error)
+    return (
+      <div className="dashboard-header error">
+        <p>{error}</p>
+      </div>
+    );
 
   return (
     <>
       {isSearchActive && <div className="overlay" onClick={handleClose}></div>}
 
-      <div className="dashboard-header">  
+      <div className="dashboard-header">
+        {/*  Dynamic stock data display */}
         <div className="d-stock-display-container">
-          <div className="d-stock-info">
-            <div className="d-stock-header">
-              <span className="d-stock-name">NIFTY 50</span>
-              <span className="d-stock-exchange">NSE</span>
-            </div>
-            <div className="d-stock-details">
-              <span className="d-stock-price">
-                25,237.05
-                <span className="d-change-icon negative pi pi-arrow-down"></span>
-              </span>
-              <span className="d-stock-change negative">
-                <span className="d-change-text">-96.55 (-0.38%)</span>
-              </span>
-            </div>
-          </div>
-
-          <span className="divider">|</span> 
-
-          <div className="d-stock-info">
-            <div className="d-stock-header">
-              <span className="d-stock-name">NIFTY BANK</span>
-              <span className="d-stock-exchange">NSE</span>
-            </div>
-            <div className="d-stock-details">
-              <span className="d-stock-price">
-                55,458.85
-                <span className="d-change-icon negative pi pi-arrow-down"></span>
-              </span>
-              <span className="d-stock-change negative">
-                <span className="d-change-text">-268.60 (-0.48%)</span>
-              </span>
-            </div>
-          </div>
-
-          <span className="divider">|</span> 
-
-          <div className="d-stock-info">
-            <div className="d-stock-header">
-              <span className="d-stock-name">SENSEX</span>
-              <span className="d-stock-exchange">BSE</span>
-            </div>
-            <div className="d-stock-details">
-              <span className="d-stock-price">
-                82,626.23
-                <span className="d-change-icon negative pi pi-arrow-down"></span>
-              </span>
-              <span className="d-stock-change negative">
-                <span className="d-change-text">-347.73 (-0.42%)</span>
-              </span>
-            </div>
-          </div>
+          {stocks.length > 0 ? (
+            stocks.map((stock, index) => {
+              const isNegative = Number(stock.change) < 0;
+              return (
+                <React.Fragment key={stock.Symbol || index}>
+                  <div className="d-stock-info">
+                    <div className="d-stock-header">
+                      <span className="d-stock-name">
+                        {stock.name ? stock.name : 'N/A'}
+                      </span>
+                      <span className="d-stock-exchange">{stock.exchange || '-'}</span>
+                    </div>
+                    <div className="d-stock-details">
+                      <span className="d-stock-price">
+                        {stock.price !== 'N/A'
+                          ? Number(stock.price).toLocaleString()
+                          : 'N/A'}
+                        <span
+                          className={`d-change-icon pi ${
+                            isNegative ? 'pi-arrow-down negative' : 'pi-arrow-up positive'
+                          }`}
+                        ></span>
+                      </span>
+                      <span
+                        className={`d-stock-change ${
+                          isNegative ? 'negative' : 'positive'
+                        }`}
+                      >
+                        <span className="d-change-text">
+                          {`${stock.change} (${stock.changePercent}%)`}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                  {index < stocks.length - 1 && <span className="divider">|</span>}
+                </React.Fragment>
+              );
+            })
+          ) : (
+            <p className="no-stocks">No active stock data available</p>
+          )}
         </div>
 
+        {/* Search Bar */}
         <div className="searchbar">
           <i className="pi pi-search search-icon"></i>
-          <input type="text"className="search-input"placeholder="Search for a Stock (e.g., RELIANCE.NS, TATA MOTORS)"onFocus={handleFocus}/>
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search for a Stock (e.g., RELIANCE.NS, TATA MOTORS)"
+            onFocus={handleFocus}
+            value={query}
+            onChange={handleSearchChange}
+          />
         </div>
       </div>
 
+      {/* Search Popup */}
       {isSearchActive && (
         <div className="search-popup">
           <div className="search-popup-header">
             <i className="pi pi-search popup-search-icon"></i>
-            <input type="text"className="popup-search-input"placeholder="Search for a Stock (e.g., RELIANCE.NS, TATA MOTORS)"autoFocus/>
+            <input
+              type="text"
+              className="popup-search-input"
+              placeholder="Search for a Stock (e.g., RELIANCE.NS, TATA MOTORS)"
+              autoFocus
+              value={query}
+              onChange={handleSearchChange}
+            />
           </div>
-          <hr />
           <div className="search-results">
-            <ul>
-              <li><img src={historyicon}></img>Tata Investment Corporation Ltd.</li>
-              <li><img src={historyicon}></img>Five Star Senior Living Inc.</li>
-            </ul>
-            <h4>Popular Stocks</h4>
-            <ul>
-              <li><img src={growthicon}></img>ITI Ltd.</li>
-              <li><img src={growthicon}></img>Tata Motors Ltd.</li>
-              <li><img src={growthicon}></img>SBI Gold Fund</li>
-            </ul>
+            {query.length > 0 && searchResults.length === 0 && (
+              <p className="no-results">No matching stocks found.</p>
+            )}
+            {searchResults.length > 0 && (
+              <ul className="results-list">
+                {searchResults.map((item) => (
+                  <li
+                    key={item.symbol}
+                    className="result-item"
+                    onClick={() => handleStockClick(item.symbol)}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <img src={growthicon} alt="Stock" />
+                    <div className="result-meta">
+                      <span className="result-name">{item.longname || item.shortname}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       )}

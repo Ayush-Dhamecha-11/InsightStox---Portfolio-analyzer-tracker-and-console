@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+.Sidebar {
+    background-color: #0E0E0E;
+    height: 100%;
+    width: 28%;
+    padding: 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    margin-top: 2rem;
+    margin-right: 1%;
+    border: 4px solid #28282889;
+}
+
+.ProfileSection {
+    text-align: center;
+}
+
+.Avatar {
+    width: 80px;
+    height: 80px;
+    background-color: #000000;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    margin-top: 2rem;
+}
+
+.Avatar img {
+    width: 80px;
+    height: 80px;
+    padding-top: 0.14rem;
+    border-radius: 50%;
+}
+
+.Sidebar h2 {
+    font-size: 1.7rem;
+    margin-bottom: 0.3rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.Email {
+    font-size: 1rem;
+    opacity: 0.8;
+    font-family: 'Poppins', sans-serif;
+}
+
+.Menu {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    margin-top: 5rem;
+    font-size: 1.3rem;
+}
+
+.Menu .Sidebar-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    color: #FFFFFF;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+}
+
+.Menu .Sidebar-item:hover {
+    background-color: #383838;
+}
+
+.Menu .Sidebar-item.Active {
+    background-color: #00c853;
+    color: #000;
+}
+
+.Menu .Sidebar-item.Active img {
+    display: none;
+}
+
+.go-to{
+    height: 17px;
+    width: 17px;
+}

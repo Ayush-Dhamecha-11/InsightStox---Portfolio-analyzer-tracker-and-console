@@ -1,13 +1,12 @@
-import {sql} from './dbConnection.js';
+import { sql } from "./dbConnection.js";
 
-
-const searchUserByEmail = async (email)=> {
+const searchUserByEmail = async (email) => {
     try {
-        const row = sql`SELECT * FROM "user" WHERE email = ${email}`;
+        const row = await sql`SELECT * FROM "user" WHERE email = ${email}`;
         return row;
     } catch (error) {
-        console.error('Error searching user by email:', error);
-        throw error;
+        console.log('Database error - searchUserByEmail');
+        return null;
     }
 };
 export { searchUserByEmail };

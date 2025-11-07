@@ -7,13 +7,13 @@ body {
 }
 
 .page-container {
-  max-width: 1200px;
+  max-width: 85%;
   margin: 0 auto;
   padding: 40px;
 }
 
-.text-positive { color: #00d27a !important;}
-.text-negative { color: #ff4d4d !important;} 
+.text-positive { color: #00C853 !important;}
+.text-negative { color: #c81b00 !important;} 
 .text-neutral { color: #ffc107 !important;}  
 
 .see-more-link {
@@ -44,7 +44,7 @@ body {
   margin: 0;
 }
 .welcome-header h1 strong {
-   color: #00d27a; 
+   color: #00c853; 
 }
 .welcome-header p {
   font-size: 1rem;
@@ -97,7 +97,7 @@ body {
 }
 
 .trending-title {
-  color: #00d27a;
+  color: #00C853;
   font-size: 1.5rem;
   margin: 0 0 20px 0;
 }
@@ -108,6 +108,13 @@ body {
   align-items: center;
   padding: 12px 0;
   border-bottom: 1px solid #2a323c;
+  transition: 0.25s ease;
+  cursor: pointer;
+}
+.trending-stock-item:hover {
+  transform: translateY(-3px);
+  background: rgba(0, 255, 120, 0.08);
+  box-shadow: 0 4px 14px rgba(0, 255, 120, 0.12);
 }
 .trending-stock-item:last-of-type { border-bottom: none; }
 
@@ -134,4 +141,8 @@ body {
   font-size: 0.8rem;
   margin: 4px 0 0; 
 }
+
+
+
+
 

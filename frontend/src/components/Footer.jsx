@@ -25,15 +25,15 @@ const Footer = ({ darkMode ,navigationLinks=[],legalLinks=[] }) => {
 
           <div className="footer_second_column column_div">
             <TextDiv tagName="h2" className="navigation_text" val="NAVIGATION" />
-            {navigationLinks.map((link, index) => (
-              <TextDiv key={index} tagName="a"className={`${link.className || "nav_link"}`} val={link.text}href={link.href}/>
+            {navigationLinks.map((link) => (
+              <TextDiv key={link.text} tagName="a"className={`${link.className || "nav_link"}`} val={link.text}href={link.href}/>
             ))}
           </div>
 
           <div className="footer_third_column column_div">
             <TextDiv tagName="h2" className="legal_text" val="LEGAL" />
-             {legalLinks.map((link, index) => (
-              <TextDiv key={index} tagName="a"className={`${link.className || "nav_link"}`} val={link.text}href={link.href}/>
+             {legalLinks.map((link) => (
+              <TextDiv key={link.text} tagName="a"className={`${link.className || "nav_link"}`} val={link.text}href={link.href}/>
             ))}
           </div>
         </div>

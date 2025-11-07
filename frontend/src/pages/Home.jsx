@@ -18,10 +18,11 @@ import featurelogo3 from "../assets/featuredivlogo3.png"
 import featurelogo4 from "../assets/featuredivlogo4.png"
 import {Link} from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
+import { useAppContext } from "../context/AppContext";
 
 export const Home = () => {
   const [openIndex, setOpenIndex] = useState(0);
-  const [darkMode ,setDarkMode] = useState(true);
+  const { darkMode, setDarkMode } = useAppContext();
   const [expandedCard, setExpandedCard] = useState(null);
   function toggleArrow(index) { 
     setOpenIndex(openIndex === index ? 0 : index)
@@ -36,13 +37,13 @@ export const Home = () => {
   }
   return (
       <div className="home-main">
-        <Navbar darkMode={darkMode} setDarkMode={setDarkMode} pageType="home" />
+        <Navbar darkMode={darkMode} setDarkMode={setDarkMode} pageType="/" />
 
         <div className="main_page">
 
           <div className="home-body">
             <ImgDiv className="home_img" src={home_background} alt="Home Background" />
-
+            
             <div className="middle_text_part">
               <TextDiv tagName="h1" className="title" data_aos="fade-down" val={<>Go Beyond Guesswork.<br />Invest with <span style={{color : "#00C853"}}>Insight</span>.</>}/>
               <TextDiv tagName="p" className="subtitle" data_aos="fade-up" val={<>Empower your financial decisions with our platform's <br /> advanced analytics and intelligent forecasting.</>}/>
@@ -56,11 +57,11 @@ export const Home = () => {
       
 
           <div className="dash_board_template" data-aos="fade-up">
-            <h1>Unified Dashboard</h1>
+            <h1>Your entire portfolio, beautifully visualized.</h1>
             <img src={dashboard_background} alt="Dashboard Background" />
           </div>
 
-          <div className="features_div" id="feature">
+          <div className="features_div" id="feature" data-aos="fade-up">
             <TextDiv tagName="h1" className="features_title_div" val={<>Everything You Need to Invest <br /> Smarter</>}/>
             <div className={`features_section ${expandedCard ? 'expanded' : ''}`} >
 
@@ -202,7 +203,7 @@ export const Home = () => {
             <TextDiv className="_text" tagName="h1" tagName2="p" val={<>Ready to Take Control of Your <br/>Investments ?</>} val2="Sign up for free and start making smarter, data-backed decisions today."/>
             <Link to ={`/auth`} onClick={() => {sessionStorage.setItem("isLogin", "false");
                                               sessionStorage.setItem("forgotpassword", "false");}}>
-            <ButtonDiv className="login_btn navbar_btn" val="Sign Up Now" />
+            <ButtonDiv className="signup_btn" val="Sign Up Now" />
             </Link>
           </div>
         <Footer darkMode={darkMode}  

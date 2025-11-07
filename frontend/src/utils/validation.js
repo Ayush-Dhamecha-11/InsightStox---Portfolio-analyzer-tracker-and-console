@@ -1,4 +1,9 @@
-function checkPasswordStrength(password) {
+export function validateEmail(email) {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+  return regex.test(email);
+}
+
+export function checkPasswordStrength(password) {
   let missing = [];
 
   // Check for lowercase letters
@@ -24,4 +29,7 @@ function checkPasswordStrength(password) {
   }
 }
 
-export { checkPasswordStrength };
+export function validateNameStrength(name) {
+  const nameRegex = /^[a-zA-Z\s]*$/;
+  return nameRegex.test(name);
+}
