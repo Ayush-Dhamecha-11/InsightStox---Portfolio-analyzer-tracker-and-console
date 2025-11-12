@@ -3,17 +3,11 @@ import "../pages/ActivitySessionHistory.css";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import { Sidebar } from "../components/Sidebar.jsx";
-import GoToArrow from "../assets/routeicon.svg";
 
 export const ActivitySessionHistory = () => {
   const [darkMode, setDarkMode] = useState(true);
-  const [downloadRequested, setDownloadRequested] = useState(false);
-  const [deleteRequested, setDeleteRequested] = useState(false);
-  const [downloadActivityRequested, setDownloadActivityRequested] = useState(false);
-  const [signoutfromalldevices, setSignoutfromalldevices] = useState(false);
-  const [clearactivityhistory, setClearactivityhistory] = useState(false);
 
-  const [activeSessions, setActiveSessions] = useState([
+  const [setActiveSessions] = useState([
     {
       id: 1,
       device: "Chrome - Windows",
@@ -111,9 +105,9 @@ export const ActivitySessionHistory = () => {
                   {activity.action}
                    <span className="dot"></span>
                     <span className="date">{activity.date}</span>
-                    <div className="signout" onClick={handleSignOut}>
+                    <button className="signout" onClick={handleSignOut}>
                       Sign Out
-                    </div>
+                    </button>
                 </div>
               ))}
               
