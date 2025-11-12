@@ -27,12 +27,15 @@ hr {
 }
 
 .activity-item {
-  font-size: 16px;
   color: #fff;
-  margin-bottom: 12px;
   display: flex;
   align-items: center;
-  gap: 8px; /* space between text, dot, and date */
+  gap: 8px;
+  padding: 8px 0;
+  margin-bottom: 0;
+  margin-left: 3rem;
+  font-size: 1rem;
+  font-weight: 100; /* space between text, dot, and date */
 }
 
 .dot {
@@ -107,12 +110,7 @@ hr {
     font-size: 0.85rem;
 }
 
-.header-section seemore{
-  display: flex;
-  justify-content: flex-end;
-  font-size: 0.95rem;
-  margin-right: 3rem;
-}
+
 .seemore{
   display: flex;
   justify-content: flex-end;
@@ -136,7 +134,7 @@ hr {
   margin-right: 3rem;
   font-size: 0.95rem;
   color: #888;
-  cursor: pointer;;
+  cursor: pointer;
   border: 1px solid transparent;
   border-radius: 8px;
   padding: 0.3rem 0.6rem;
@@ -186,13 +184,7 @@ hr {
   margin-left: 0.5rem;
 }
 /* Activity Items - No boxes */
-.activity-item {
-  padding: 8px 0;
-  margin-bottom: 0;
-  margin-left: 3rem;
-  font-size: 1rem;
-  font-weight: 100;
-}
+
 .security-alerts{
   padding: 8px 0;
   margin-bottom: 0;
@@ -250,10 +242,7 @@ hr {
 }
 
 /* Security Alerts - No boxes */
-.security-alerts {
-  padding: 0;
-  margin: 15px 0;
-}
+
 
 .security-alert-item {
   display: flex;
