@@ -8,8 +8,7 @@ import GoToArrow from "../assets/routeicon.svg";
 
 export const DataPrivacy = () => {
   const [darkMode, setDarkMode] = useState(true);
-  const [downloadRequested, setDownloadRequested] = useState(false);
-  const [deleteRequested, setDeleteRequested] = useState(false);
+
 
   return (
     <div className="Page">
@@ -49,16 +48,14 @@ export const DataPrivacy = () => {
                   Privacy Policy
                 </p>
                 <p className="usage-brief">
-                  Read our Privacy Policy
-                  <img className="more-info" src={GoToArrow}/>
+                  Read our Privacy Policy<img className="more-info" src={GoToArrow} alt="arrow"/>
                 </p>
               </div>
               <hr/>
               <div className="consent-compliance">
                 <p className="main-concept">Terms & Condition</p>
                 <p className="usage-brief">
-                  Read our Terms & Condition
-                  <img className="more-info" src={GoToArrow}/>
+                  Read our Terms & Condition<img className="more-info" src={GoToArrow} alt="arrow"/>
                 </p>
                   
               </div>
