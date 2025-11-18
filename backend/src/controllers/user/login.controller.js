@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { UAParser } from "ua-parser-js";
 import { searchUserByEmail } from "../../db/findUser.js";
-import { checkEmailSyntax,checkPasswordSyntax } from "../../utils/checkUserSyntax.js";
+import { checkEmailSyntax } from "../../utils/checkUserSyntax.js";
 import { insertActiveSession } from "../../db/insertActiveSession.js";
 import { addSecurityAlert } from "../../mongoModels/user.model.js";
 
@@ -28,14 +28,6 @@ const loginUser = async (req, res) => {
             return res.status(422).json({
                 success: false,
                 message: emailValidity.message,
-            });
-        }
-
-        const passwordValidity = checkPasswordSyntax(password);
-        if (!passwordValidity.success) {
-            return res.status(422).json({
-                success: false,
-                message: passwordValidity.message,
             });
         }
 
