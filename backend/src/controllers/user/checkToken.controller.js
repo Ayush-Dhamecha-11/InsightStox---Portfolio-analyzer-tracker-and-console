@@ -1,6 +1,6 @@
 import { searchUserByEmail } from "../../db/findUser.js";
 import jwt from "jsonwebtoken";
-import { getActiveSessionByToken } from "../db/getActiveSession.js";
+import { getActiveSessionByToken } from "../../db/getActiveSession.js";
 const checkToken = async (req, res) => {
     try {
         const token = req.cookies?.token;
