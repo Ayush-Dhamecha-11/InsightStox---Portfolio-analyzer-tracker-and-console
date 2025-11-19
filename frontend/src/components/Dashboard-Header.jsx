@@ -190,9 +190,14 @@ const DashboardHeader = ({ isWatchlistPage = false, onAddToWatchlist = null }) =
           {stocks.length > 0 ? (
             stocks.map((stock, index) => {
               const isNegative = Number(stock.change) < 0;
+              const stockSymbol = stock.Symbol || stock.symbol;
               return (
-                <React.Fragment key={stock.Symbol || index}>
-                  <div className="d-stock-info">
+                <React.Fragment key={stockSymbol || index}>
+                  <div 
+                    className="d-stock-info"
+                    onClick={() => stockSymbol && handleStockClick(stockSymbol)}
+                    style={{ cursor: stockSymbol ? 'pointer' : 'default' }}
+                  >
                     <div className="d-stock-header">
                       <span className="d-stock-name">
                         {stock.name ? stock.name : 'N/A'}
