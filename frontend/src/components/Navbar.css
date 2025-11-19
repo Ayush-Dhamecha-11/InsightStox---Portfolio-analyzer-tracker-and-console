@@ -43,7 +43,7 @@
 
 .navbar_btn {
   background: none;
-  border: 1px solid currentColor;
+  border: 2px solid #ffffff;
   color: inherit;
   font-size: 0.95rem;
   cursor: pointer;
@@ -58,7 +58,7 @@
   background-color: black ;
     font-weight: 500; 
     color: #00C853 ;
-    border: 1px solid #00C853 ;
+    border: 2px solid #00C853 ;
 }
 
 .navbar_btn.active {
@@ -124,7 +124,7 @@
   z-index: 10000;
   padding: 0 16px 16px 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(0, 200, 83, 0.4);
+  border: 2px solid #00C853;
   animation: slideDown 0.3s ease;
   transform-origin: top right;
 }
@@ -193,7 +193,7 @@
   border-radius: 16px;
   z-index: 10000;
   padding: 1rem 1.2rem;
-  border: 1px solid rgba(0, 200, 83, 0.4);
+  border: 2px solid #00C853;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   animation: slideDown 0.3s ease;
   transform-origin: top right;
@@ -229,7 +229,9 @@
   transition: all 0.3s ease;
   gap : 1rem;
 }
-.right_btn:active{
+
+.profile_btn:active,
+.menu_toggle:active{
   transform: scale(0.95);
 }
 .profile_btn{

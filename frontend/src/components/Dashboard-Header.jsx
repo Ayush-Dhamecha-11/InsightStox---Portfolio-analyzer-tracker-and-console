@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Dashboard-Header.css';
 import growthicon from '../assets/growthicon.svg';
-import historyicon from '../assets/historyicon.svg';
 import { useAppContext } from "../context/AppContext.jsx";
 
 //Enable cookies for all axios requests (important for auth sessions)

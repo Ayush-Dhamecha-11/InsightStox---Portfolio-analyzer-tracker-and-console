@@ -146,7 +146,9 @@
     border-spacing: 0 !important;
     background-color: transparent !important;
 }
-
+.table-stock:hover {
+    background-color: #0a0a0a;
+}
 .watchlist-table th {
     padding: 0 0.75rem;
     padding-bottom:1rem;
@@ -346,6 +348,7 @@
     color: #999;
     cursor: pointer;
     font-size: 0.85rem;
+    z-index: 10;
 }
 @media (max-width: 1150px) {
    .action-btn::before {
