@@ -8,7 +8,16 @@ export const AppProvider = ({ children }) => {
     const [isSearchActive, setIsSearchActive] = useState(false);
     const [userDetails, setUserDetails] = useState(null); 
     const [userLoggedIn, setUserLoggedIn] = useState(false);
-    const val = { darkMode, setDarkMode ,userDetails,setUserDetails,userLoggedIn,setUserLoggedIn,isSearchActive,setIsSearchActive};
+    const [headerStocks, setHeaderStocks] = useState(null);
+    const [headerStocksTimestamp, setHeaderStocksTimestamp] = useState(null);
+    const val = { 
+        darkMode, setDarkMode,
+        userDetails, setUserDetails,
+        userLoggedIn, setUserLoggedIn,
+        isSearchActive, setIsSearchActive,
+        headerStocks, setHeaderStocks,
+        headerStocksTimestamp, setHeaderStocksTimestamp
+    };
     useEffect(() => {
         GetUserDetails(setUserDetails);
     }, [userLoggedIn]);

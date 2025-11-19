@@ -6,7 +6,7 @@ import DashboardHeader from '../components/Dashboard-Header.jsx';
 import Footer from '../components/Footer.jsx';
 import filterIcon from '../assets/filter-button.svg';
 import axios from "axios";
-
+import {useNavigate} from 'react-router-dom';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_LINK;
 const Watchlist_API = `${BACKEND_URL}/api/v1/dashboard/displayWatchlist`;
 
@@ -22,6 +22,7 @@ const  Watchlist= () => {
   const [isLoading, setIsLoading] = useState(true);
   const isWatchlistEmpty = !isLoading && watchlistData.length === 0;
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   // Filter states
   const fetchWatchlist = async () => {
@@ -60,8 +61,7 @@ const  Watchlist= () => {
     catch(err){
       console.error("Error removing stock:", err);
       // If backend call fails, revert by refetching to restore data
-      fetchWatchlist();
-    }
+      if (err.response?.status !== 200) fetchWatchlist();    }
   }
   
   const handleAddToWatchlist = async (symbol) => {
@@ -77,8 +77,10 @@ const  Watchlist= () => {
       console.error("Error adding stock to watchlist:", err.response?.data || err);
     }
   };
-
-  const [filters, setFilters] = useState({
+    const handleStockClick = (symbol) => {
+      navigate(`/stockdetails/${symbol}`);
+    };  
+    const [filters, setFilters] = useState({
     dailyChange: '',
     dailyChangePercent: '',
     priceFrom: '',
@@ -307,7 +309,7 @@ const handleSearch = (value) => {
                   </tr>
                 ) : (
                   searchData.map((stock) => (
-                    <tr key={stock.symbol}>
+                    <tr key={stock.symbol} className="table-stock" onClick={() => handleStockClick(stock.symbol)} style={{cursor: 'pointer'}}>
                       <td>
                         <div className="company-cell">
                           <span className="company-name">{stock.company}</span>
@@ -331,7 +333,7 @@ const handleSearch = (value) => {
                         <button 
                           className="action-btn"
                           aria-label={`Remove ${stock.symbol} from watchlist`} 
-                          onClick={() => handleRemoveStock(stock.symbol)}
+                           onClick={(e) => {e.stopPropagation(); handleRemoveStock(stock.symbol);}}
                         >
                          <span>Remove</span>
                         </button>
