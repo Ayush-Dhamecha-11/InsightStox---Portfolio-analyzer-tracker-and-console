@@ -28,12 +28,13 @@ export default function PortfolioChart() {
     labels: [],
     datasets: [
       {
-        label: "Portfolio Value ($)",
+        label: "Portfolio Value",
         data: [],
-        borderColor: "#22C55E",
-        backgroundColor: "rgba(34, 197, 94, 0.1)",
-        tension: 0.4,
-        fill: false,
+        borderColor: "#00c853",
+        borderWidth: 1.75,
+        backgroundColor: "rgba(34, 197, 94, 0.15)",
+        tension: 0.35,
+        pointRadius: 0,
       },
     ],
   });
@@ -67,28 +68,28 @@ export default function PortfolioChart() {
     return {
       responsive: true,
       maintainAspectRatio: false,
+      elements: {
+        line: { borderWidth: 1.75 }
+      },
       plugins: {
-        legend: {
-          position: "bottom",
-          labels: { color: "#FFFFFF" },
-        },
+        legend: { display: false },
         title: {
           display: true,
           text: "Portfolio Performance",
           color: "#00C853",
-          font: { size: 22, weight: "bold" },
+          font: { size: 22},
         },
         tooltip: {
           enabled: true,
+          displayColors: false,
           backgroundColor: "#09090B",
           borderColor: "#00C853",
           borderWidth: 1,
-          titleColor: "#F4F4F5",
-          bodyColor: "#A1A1AA",
+          bodyColor: "#00C853",
           padding: 10,
           cornerRadius: 4,
 
-          parser: () => {},//✅VERY IMPORTANT FIX
+          parser: () => { },//✅VERY IMPORTANT FIX
 
           callbacks: {
             title: (context) => {
@@ -113,23 +114,17 @@ export default function PortfolioChart() {
         },
       },
       interaction: { mode: "index", intersect: false },
-      elements: {
-        point: { radius: 0, hoverRadius: 6, hoverBackgroundColor: "#22C55E" },
-      },
+      
       scales: {
         x: {
           type: "category", //✅FIX:prevents all date parsing
           ticks: {
-            color: "#FFFFFF",
+            color: "#fff",
             // only auto-skip and limit ticks on small screens when viewing '30d' (days)
             autoSkip: isNarrowDays ? true : false,
             maxTicksLimit: maxTicks,
-            maxRotation:  0,
-            minRotation:  0,
-            font: (context) => {
-              const label = context.tick.label;
-              return { weight: label ? "bold" : "normal" };
-            },
+            maxRotation: 0,
+            minRotation: 0,
           },
           grid: {
             display: true,
@@ -146,7 +141,7 @@ export default function PortfolioChart() {
         },
         y: {
           ticks: {
-            color: "#A1A1AA",
+            color: "#fff",
             callback: (v) => v.toLocaleString(),
           },
           grid: { color: "#3F3F46" },
@@ -172,13 +167,13 @@ export default function PortfolioChart() {
       if (range === "30d") {
         const sliced = daily.slice(-30);
 
-          labels = sliced.map((d) => {
-            const date = new Date(d.date);
-            const day = date.getDate();
-            const monthShort = date.toLocaleDateString("en-US", { month: "short" });
-            // Show month name only when day === 1 (e.g., "Nov 1"), otherwise show day number only
-            return day === 1 ? `${monthShort} 1` : String(day);
-          });
+        labels = sliced.map((d) => {
+          const date = new Date(d.date);
+          const day = date.getDate();
+          const monthShort = date.toLocaleDateString("en-US", { month: "short" });
+          // Show month name only when day === 1 (e.g., "Nov 1"), otherwise show day number only
+          return day === 1 ? `${monthShort} 1` : String(day);
+        });
         setHiddenDates(sliced.map((d) => d.date));
 
         values = sliced.map((d) => d.valuation);
@@ -216,14 +211,13 @@ export default function PortfolioChart() {
         labels,
         datasets: [
           {
-            label: "Portfolio Value ($)",
+            label: "Portfolio Value",
             data: values,
-            borderColor: "#22C55E",
-            backgroundColor: "rgba(34, 197, 94, 0.1)",
-            tension: 0.4,
+            borderColor: "#00c853",
+            backgroundColor: "rgba(0, 200, 83, 0.15)",
+            tension: 0.35,
             fill: false,
-            pointHoverRadius: 6,
-            pointHoverBorderWidth: 2,
+            pointRadius: 0,
           },
         ],
       });
@@ -259,31 +253,30 @@ export default function PortfolioChart() {
 
   return (
     <div className="scale-wrapper">
-    <div className="portfoliochart-container">
-      <div className="portfoliochart-box">
-        <div className="portfoliochart-buttons">
-          {[
-            { label: "30D", value: "30d" },
-            { label: "6M", value: "6m" },
-            { label: "1Y", value: "1y" },
-          ].map((btn) => (
-            <button
-              key={btn.value}
-              onClick={() => setRange(btn.value)}
-              className={`portfoliochart-btn ${
-                range === btn.value ? "active" : ""
-              }`}
-            >
-              {btn.label}
-            </button>
-          ))}
-        </div>
+      <div className="portfoliochart-container">
+        <div className="portfoliochart-box">
+          <div className="portfoliochart-buttons">
+            {[
+              { label: "30D", value: "30d" },
+              { label: "6M", value: "6m" },
+              { label: "1Y", value: "1y" },
+            ].map((btn) => (
+              <button
+                key={btn.value}
+                onClick={() => setRange(btn.value)}
+                className={`portfoliochart-btn ${range === btn.value ? "active" : ""
+                  }`}
+              >
+                {btn.label}
+              </button>
+            ))}
+          </div>
 
-        <div className="portfoliochart-graph">
-          <Line options={options} data={chartData} />
+          <div className="portfoliochart-graph">
+            <Line options={options} data={chartData} />
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }

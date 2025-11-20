@@ -95,7 +95,7 @@ const Navbar = ({ darkMode, setDarkMode, pageType, profileData = {} }) => {
               </Link>
               <Link 
                 className={`navbar_btn ${location.pathname === "/portfolio" ? "active" : ""}`} 
-                to="#"
+                to="/portfolio"
               >
                 Portfolio
               </Link>
@@ -166,7 +166,7 @@ const Navbar = ({ darkMode, setDarkMode, pageType, profileData = {} }) => {
             <div className="menuoptions">
               <ul>
               <Link to="/dashboard"><li>Dashboard </li></Link>
-              <Link to="#"><li>Portfolio</li></Link>
+              <Link to="/portfolio"><li>Portfolio</li></Link>
               <Link to="/ai-insight"><li>AI Insights</li></Link>
               <Link to="#"><li>Compare Stocks</li></Link>
               <Link to="/watchlist"><li className="lastli">Watchlist</li></Link>

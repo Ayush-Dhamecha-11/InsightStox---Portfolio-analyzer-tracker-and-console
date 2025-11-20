@@ -116,7 +116,7 @@ body {
   background: rgba(0, 255, 120, 0.08);
   box-shadow: 0 4px 14px rgba(0, 255, 120, 0.12);
   padding: 0.5rem;              
-  border-radius: 1.5rem;
+  border-radius: 0.7rem;
 }
 .trending-stock-item:last-of-type { border-bottom: none; }
 
