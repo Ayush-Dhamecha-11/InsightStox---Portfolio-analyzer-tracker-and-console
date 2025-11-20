@@ -7,7 +7,6 @@ const deleteAccount = async (req, res) => {
     try {
         const profileImage = req.user.profileimage;
         const response = await deleteUserByEmail(req.user.email);
-
         if (!response) {
             return res
                 .status(503)
@@ -20,8 +19,7 @@ const deleteAccount = async (req, res) => {
         await deleteActivityHistoryByEmail(req.user.email);
 
         await deleteSecurityAlertsByEmail(req.user.email);
-
-        if (profileImage !== defaultProfileImage && profileImage.startsWith("https://res.cloudinary.com")) {
+        if ((profileImage !== defaultProfileImage) && (profileImage.startsWith("https://res.cloudinary.com"))) {
             const parts = profileImage.split("/");
             const filename = parts[parts.length - 1];
             const publicId = filename.split(".")[0];
