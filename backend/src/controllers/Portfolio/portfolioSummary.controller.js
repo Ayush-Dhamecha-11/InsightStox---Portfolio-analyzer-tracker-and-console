@@ -84,7 +84,7 @@ export const getSummaryTable = async (req,res) => {
 };
 
 function formatNumber(value) {
-  if (!value || Number.isNaN(value)) return "-";
+  if (!value || typeof value !== "number" ||Number.isNaN(value)) return "-";
   const abs = Math.abs(Number(value));
   if (abs >= 1e12) return (value / 1e12).toFixed(2) + "T";
   if (abs >= 1e9) return (value / 1e9).toFixed(2) + "B";

@@ -6,12 +6,13 @@
     "testRunner": "jest",
 
     "mutate": [
-        "src/controllers/dashBoard/addTransaction.controller.js",
-        "src/controllers/dashBoard/getNews.controller.js",
-        "src/controllers/dashBoard/portfolioCalculation.controller.js",
-        "src/controllers/dashBoard/stockAllocation.controller.js",
-        "src/controllers/dashBoard/userStockSummary.controller.js",
-        "src/controllers/dashBoard/watchlist.controller.js"
+        "src/**/*.js",
+        "!src/controllers/dashBoard/dashBoard.controller.js",
+        "!src/controllers/dashBoard/searchStock.controller.js",
+        "!src/controllers/Portfolio/portfolio.controller.js",
+        "!src/controllers/user/user.controller.js",
+        "!src/controllers/user/deleteAccount.controller.js",
+        "!src/routes/**"
     ],
     "mutator": {
         "excludedMutations": ["StringLiteral","ObjectLiteral","FunctionCall","MethodCall","OptionalChaining"]
@@ -36,7 +37,7 @@
                 "^.+\\.js$": "babel-jest"
             },
 
-            "testMatch": ["**/test/src/controllers/dashBoard/*.test.js","!**/test/src/controllers/dashBoard/searchStock.test.js"]
+            "testMatch": ["**/test/src/**/*.test.js","!**/test/src/controllers/user/deleteAccount.controller.test.js","!**/test/src/controllers/dashBoard/searchStock.controller.test.js"]
         }
     }
 

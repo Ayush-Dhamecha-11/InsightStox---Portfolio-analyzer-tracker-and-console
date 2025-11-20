@@ -8,7 +8,7 @@ const yahooFinance = new YahooFinance();
             let price
             const holding_check = await sql`SELECT spended_amount,current_holding FROM "stock_summary" WHERE email=${email} AND symbol=${symbol}`;
             if(holding_check.length===0){
-                holding_check[0]={current_holding:0,spended_amount:0};
+                holding_check[0]={current_holding:0,spended_amount:0,avg_price:0};
             }
             let old_holding = 0, old_spended_amount = 0;
             if(transaction_type==='SELL'){                    

@@ -191,7 +191,7 @@ describe('registerOtpGeneration Controller', () => {
       await registerOtpGeneration(req, res);
 
       expect(res.status).toHaveBeenCalledWith(422);
-      expect(res.json).toHaveBeenCalledWith({ success: false, message: 'Invalid syntax' });
+      expect(res.json).toHaveBeenCalledWith({ success: false, message: 'Invalid user details Format' });
     });
 
     it('should return 502 if email sending fails', async () => {
