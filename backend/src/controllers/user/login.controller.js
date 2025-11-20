@@ -88,7 +88,7 @@ const loginUser = async (req, res) => {
                 });
         }
 
-        if (addActiveSessionStatus === 0) {
+        if (addActiveSessionStatus.length === 0) {
             return res
                 .status(410)
                 .json({
