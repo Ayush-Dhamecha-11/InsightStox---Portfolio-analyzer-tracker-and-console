@@ -140,7 +140,9 @@ describe("getPortfolioHoldings Controller", () => {
 
   it("should format null/undefined as '--'", async () => {
     getStockSummary.mockResolvedValue([
-      { symbol: "TSLA", current_holding: 5, avg_price: null, realized_gain: undefined }
+      { symbol: "TSLA", current_holding: 5, avg_price: null, realized_gain: undefined },
+      { symbol: "TSLA", current_holding: 0, avg_price: 200, realized_gain: 100 },
+      { symbol: "TSLA", current_holding: -2, avg_price: undefined, realized_gain: null }
     ]);
 
     getPrice.mockResolvedValueOnce({
@@ -185,7 +187,7 @@ describe("getPortfolioHoldings Controller", () => {
     getPrice.mockResolvedValueOnce({
       current: null,
       close: 0,
-      marketstate: "REGULAR",
+      marketstate: null,
     });
 
     await getPortfolioHoldings(req, res);
@@ -193,7 +195,7 @@ describe("getPortfolioHoldings Controller", () => {
     const expected = [
       {
         symbol: "TSLA",
-        status: "REGULAR",
+        status: "UNKNOWN",
         shares: 5,
         lastPrice: "--",
         avgPrice: "--",

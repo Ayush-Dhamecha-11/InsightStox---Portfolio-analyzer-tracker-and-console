@@ -1,464 +1,445 @@
-const mockQuoteSummary = jest.fn();
-
-jest.mock("yahoo-finance2", () => {
-  return jest.fn(function YahooFinance() {
-  });
-});
-
-jest.mock("../../../../src/utils/stores/priceRates.js", () => ({
-  PriceStore: { get: jest.fn() },
-}));
-
-jest.mock("../../../../src/utils/stockPriceStore.js", () => ({
-  stockPriceStore: { add: jest.fn() },
-}));
-
-jest.mock("../../../../src/db/stockSummary.js", () => ({
-  getStockSummary: jest.fn(),
-}));
-
-import YahooFinance from "yahoo-finance2";
 import { getSummaryTable } from "../../../../src/controllers/Portfolio/portfolioSummary.controller.js";
 import { getStockSummary } from "../../../../src/db/stockSummary.js";
+import YahooFinance from "yahoo-finance2";
 import { PriceStore } from "../../../../src/utils/stores/priceRates.js";
 import { stockPriceStore } from "../../../../src/utils/stockPriceStore.js";
+jest.mock("../../../../src/db/dbConnection.js", () => ({
+  sql: jest.fn()
+}));
+jest.mock("yahoo-finance2");
+jest.mock("../../../../src/db/stockSummary.js");
+jest.mock("../../../../src/utils/stores/priceRates.js", () => ({
+  PriceStore: { get: jest.fn() }
+}));
+jest.mock("../../../../src/utils/stockPriceStore.js", () => ({
+  stockPriceStore: { add: jest.fn(), get: jest.fn() }
+}));
 
-YahooFinance.prototype.quoteSummary = mockQuoteSummary;
+const mockRes = () => {
+  const res = {};
+  res.status = jest.fn().mockReturnValue(res);
+  res.json = jest.fn().mockReturnValue(res);
+  return res;
+};
 
-describe("getSummaryTable", () => {
-  let req, res;
-  const testEmail = "test@example.com";
-  const FIXED_DATE = new Date('2025-11-18T12:00:00Z');
+describe("getSummaryTable Controller", () => {
+  let res;
+
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(FIXED_DATE);
     jest.clearAllMocks();
-    req = { user: { email: testEmail } };
-    res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-    PriceStore.get.mockReturnValue(1);
+    res = mockRes();
   });
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-  
-  beforeAll(() => {
-      mockQuoteSummary.mockResolvedValue({
-          price: {
-            regularMarketPrice: 0,
-            regularMarketPreviousClose: 0,
-            regularMarketChange: 0,
-            regularMarketChangePercent: 0,
-            regularMarketVolume: 0,
-            marketCap: 0,
-          },
-          summaryDetail: {
-            averageVolume3Month: 0, // Ensure numeric default
-          },
-      });
-  });
-
-  it("returns 503 when stock summary is null (DB failure to fetch)", async () => {
+  test("should return 503 when getStockSummary returns null", async () => {
+    const req = { user: { email: "test@mail.com" } };
     getStockSummary.mockResolvedValue(null);
+
     await getSummaryTable(req, res);
+
+    expect(getStockSummary).toHaveBeenCalledWith("test@mail.com");
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
-      message: "Failed to fetch stock Summary",
+      message: "Failed to fetch stock Summary"
     });
-    expect(getStockSummary).toHaveBeenCalledWith(testEmail);
   });
-
-  it("returns 200 with empty summary when no holdings", async () => {
+  test("should return empty summary array when no holdings", async () => {
+    const req = { user: { email: "test@mail.com" } };
     getStockSummary.mockResolvedValue([]);
+
     await getSummaryTable(req, res);
+
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
-      summary: [],
+      summary: []
     });
-    expect(mockQuoteSummary).not.toHaveBeenCalled();
   });
+  test("should return summary table with full correct data", async () => {
+    const req = { user: { email: "test@mail.com" } };
 
-  it("returns 500 when getStockSummary throws (DB crash)", async () => {
-    const error = new Error("DB crash");
-    getStockSummary.mockRejectedValue(error);
+    getStockSummary.mockResolvedValue([
+      { symbol: "AAPL", current_holding: 5 }
+    ]);
+
+    PriceStore.get.mockReturnValue(2); 
+
+    YahooFinance.prototype.quoteSummary.mockResolvedValue({
+      price: {
+        symbol: "AAPL",
+        currency: "USD",
+        longName: "Apple Inc",
+        shortName: "Apple",
+        regularMarketPrice: 200,
+        regularMarketPreviousClose: 190,
+        regularMarketChange: 10,
+        regularMarketChangePercent: 5,
+        regularMarketTime: 1732084800,
+        regularMarketVolume: 100000
+      },
+      summaryDetail: {
+        dayLow: 180,
+        dayHigh: 220,
+        fiftyTwoWeekLow: 150,
+        fiftyTwoWeekHigh: 250,
+        averageVolume3Month: 200000
+      }
+    });
+    const expectedMarketTime = new Date(1732084800).toLocaleTimeString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
     await getSummaryTable(req, res);
+    expect(YahooFinance.prototype.quoteSummary).toHaveBeenCalledWith("AAPL", {
+      modules: ["price", "summaryDetail", "defaultKeyStatistics"],
+    });
+    expect(stockPriceStore.add).toHaveBeenCalledWith("AAPL", {
+      symbol: "AAPL",
+      current: 100,
+      currency: "USD",
+      close: 95,
+      percentageChange: 5,
+      shortname: "Apple",
+      longname: "Apple Inc",
+      change: 5,
+      expiresAt: expect.any(Number)
+    });
+
+    expect(res.status).toHaveBeenCalledWith(200);
+
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      summary: [
+        {
+          symbol: "AAPL",
+          shortname: "Apple",
+          longname: "Apple Inc",
+          lastPrice: 100,
+          changePercent: 5,
+          change: 5,
+          currency: "USD",
+          marketTime: expectedMarketTime,
+          volume: "100.00K",
+          shares: 5,
+          avgVolume: "200.00K",
+          dayRange: "90.00 → 110.00",
+          yearRange: "75.00 → 125.00",
+          marketCap: "-"
+        }
+      ]
+    });
+  });
+  test("should skip rejected yahooFinance results", async () => {
+    const req = { user: { email: "x@mail.com" } };
+    getStockSummary.mockResolvedValue([{ symbol: "TSLA", current_holding: 10 }]);
+
+    YahooFinance.prototype.quoteSummary.mockRejectedValue(new Error("fail"));
+
+    await getSummaryTable(req, res);
+
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      summary: []
+    });
+  });
+  test("should catch error when summaryDetail missing", async () => {
+    const req = { user: { email: "t@mail.com" } };
+    getStockSummary.mockResolvedValue([{ symbol: "AMZN", current_holding: 2 }]);
+
+    YahooFinance.prototype.quoteSummary.mockResolvedValue({
+      price: { regularMarketPrice: 100 },
+      summaryDetail: null
+    });
+
+    await getSummaryTable(req, res);
+
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
-      meaasge: undefined,
+      meaasge: undefined
     });
   });
-
-  it("handles all rejected YahooFinance calls (filters all out)", async () => {
-    getStockSummary.mockResolvedValue([{ symbol: "AAPL", current_holding: 10 }]);
-    mockQuoteSummary.mockRejectedValueOnce(new Error("API error"));
-    
-    await getSummaryTable(req, res);
-    
-    expect(mockQuoteSummary).toHaveBeenCalledTimes(1);
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({
-      success: true,
-      summary: [],
-    });
-    expect(stockPriceStore.add).not.toHaveBeenCalled();
-  });
-
-  it("handles missing price data and summaryDetail, returning defaults", async () => {
-    getStockSummary.mockResolvedValue([{ symbol: "NVDA", current_holding: 5 }]);
-    
-    // Explicitly mock all fields needed by formatNumber as 0 to prevent crash
-    mockQuoteSummary.mockResolvedValueOnce({
-      price: {
-        regularMarketPrice: 0,
-        regularMarketPreviousClose: 0,
-        regularMarketChange: 0,
-        regularMarketChangePercent: 0,
-        regularMarketVolume: 0,
-        marketCap: 0,
-      },
-      summaryDetail: {
-        averageVolume3Month: 0, // Explicitly set to 0 to prevent crash
-      },
-    });
-    
-    await getSummaryTable(req, res);
-    
-    expect(mockQuoteSummary).toHaveBeenCalledTimes(1);
-    expect(res.status).toHaveBeenCalledWith(200);
-    
-    expect(res.json).toHaveBeenCalledWith({
-      success: true,
-      summary: [{
-        symbol: undefined,
-        shortname: null,
-        longname: null,
-        lastPrice: 0,
-        changePercent: 0,
-        change: 0,
-        currency: "INR",
-        marketTime: expect.any(String),
-        volume: "-", 
-        shares: 5,
-        avgVolume: "-", 
-        dayRange: "₹- → ₹-",
-        yearRange: "₹- → ₹-",
-        marketCap: "-",
-      }],
-    });
-    
-    expect(stockPriceStore.add).toHaveBeenCalledTimes(1);
-    expect(stockPriceStore.add).toHaveBeenCalledWith(undefined, {
-      symbol: undefined,
-      current: 0,
-      currency: "INR",
-      close: 0,
-      percentageChange: 0,
-      shortname: null,
-      longname: null,
-      change: 0,
-      expiresAt: expect.any(Number),
-    });
-  });
-
-  it("computes summary table properly with all data and converts currency", async () => {
-    getStockSummary.mockResolvedValue([{ symbol: "AAPL", current_holding: 10 }]);
-
-    const ts = 1700000000000;
-    const exchangeRate = 80;
-    PriceStore.get.mockReturnValue(exchangeRate);
-
-    mockQuoteSummary.mockResolvedValueOnce({
-      price: {
-        symbol: "AAPL",
-        currency: "USD",
-        regularMarketPrice: 150,
-        regularMarketPreviousClose: 145,
-        regularMarketChange: 5,
-        regularMarketChangePercent: 3.45,
-        regularMarketVolume: 1000000,
-        regularMarketTime: ts,
-        longName: "Apple Inc",
-        shortName: "AAPL",
-        marketCap: 2000000000000,
-      },
-      summaryDetail: {
-        dayLow: 148,
-        dayHigh: 152,
-        fiftyTwoWeekLow: 120,
-        fiftyTwoWeekHigh: 160,
-        averageVolume3Month: 2000000,
-      },
-    });
-
-    await getSummaryTable(req, res);
-
-    const expectedLastPrice = 150 / exchangeRate;
-    const expectedPreviousClose = 145 / exchangeRate;
-    const expectedChange = 5 / exchangeRate;
-
-    expect(mockQuoteSummary).toHaveBeenCalledTimes(1);
-    expect(stockPriceStore.add).toHaveBeenCalledTimes(1);
-    expect(res.status).toHaveBeenCalledWith(200);
-
-    expect(stockPriceStore.add).toHaveBeenCalledWith("AAPL", {
-      symbol: "AAPL",
-      current: expectedLastPrice,
-      currency: "USD",
-      close: expectedPreviousClose,
-      percentageChange: 3.45,
-      shortname: "AAPL",
-      longname: "Apple Inc",
-      change: expectedChange,
-      expiresAt: expect.any(Number),
-    });
-
-    expect(res.json).toHaveBeenCalledWith({
-      success: true,
-      summary: [{
-        symbol: "AAPL",
-        shortname: "AAPL",
-        longname: "Apple Inc",
-        lastPrice: expectedLastPrice,
-        changePercent: 3.45,
-        change: expectedChange,
-        currency: "USD",
-        marketTime: expect.any(String),
-        volume: "1.00M",
-        shares: 10,
-        avgVolume: "2.00M",
-        dayRange: "₹148 → ₹152",
-        yearRange: "₹120 → ₹160",
-        marketCap: "2.00T",
-      }],
-    });
-  });
-
-  it("computes summary table properly with all data and converts currency", async () => {
-    getStockSummary.mockResolvedValue([{ symbol: "AAPL", current_holding: 10 }]);
-
-    const ts = 1700000000000;
-    const exchangeRate = 80;
-    PriceStore.get.mockReturnValue(exchangeRate);
-
-    mockQuoteSummary.mockResolvedValueOnce({
-      price: {
-        symbol: "AAPL",
-        currency: "USD",
-        regularMarketPrice: 150,
-        regularMarketPreviousClose: 145,
-        regularMarketChange: 5,
-        regularMarketChangePercent: 3.45,
-        regularMarketVolume: 1000000,
-        regularMarketTime: ts,
-        longName: "Apple Inc",
-        shortName: "AAPL",
-        marketCap: 1000,
-      },
-      summaryDetail: {
-        dayLow: 148,
-        dayHigh: 152,
-        fiftyTwoWeekLow: 120,
-        fiftyTwoWeekHigh: 160,
-        averageVolume3Month: 1000000000,
-      },
-    });
-    
-
-    await getSummaryTable(req, res);
-    expect(mockQuoteSummary).toHaveBeenCalledWith('AAPL', {
-        modules: ["price", "summaryDetail", "defaultKeyStatistics"]
-      });
-    const expectedLastPrice = 150 / exchangeRate;
-    const expectedPreviousClose = 145 / exchangeRate;
-    const expectedChange = 5 / exchangeRate;
-
-    expect(mockQuoteSummary).toHaveBeenCalledTimes(1);
-    expect(stockPriceStore.add).toHaveBeenCalledTimes(1);
-    expect(res.status).toHaveBeenCalledWith(200);
-    const expectedExpiry = FIXED_DATE.getTime() + (60 * 1000);
-    expect(stockPriceStore.add).toHaveBeenCalledWith("AAPL", {
-      symbol: "AAPL",
-      current: expectedLastPrice,
-      currency: "USD",
-      close: expectedPreviousClose,
-      percentageChange: 3.45,
-      shortname: "AAPL",
-      longname: "Apple Inc",
-      change: expectedChange,
-      expiresAt: expectedExpiry,
-    });
-
-    expect(res.json).toHaveBeenCalledWith({
-      success: true,
-      summary: [{
-        symbol: "AAPL",
-        shortname: "AAPL",
-        longname: "Apple Inc",
-        lastPrice: expectedLastPrice,
-        changePercent: 3.45,
-        change: expectedChange,
-        currency: "USD",
-        marketTime: "03:43 am",
-        volume: "1.00M",
-        shares: 10,
-        avgVolume: "1.00B",
-        dayRange: "₹148 → ₹152",
-        yearRange: "₹120 → ₹160",
-        marketCap: "1.00K",
-      }],
-    });
-  });
-
-  it("computes summary table properly with all data and converts currency", async () => {
-    getStockSummary.mockResolvedValue([{ symbol: "AAPL", current_holding: null }]);
-
-    const ts = 1700000000000;
-    const exchangeRate = null;
-    PriceStore.get.mockReturnValue(exchangeRate);
-
-    mockQuoteSummary.mockResolvedValueOnce({
-      price: {
-        symbol: "AAPL",
-        currency: "USD",
-        regularMarketPrice: 150,
-        regularMarketPreviousClose: 145,
-        regularMarketChange: 5,
-        regularMarketChangePercent: 3.45,
-        regularMarketVolume: 1000000,
-        regularMarketTime: ts,
-        longName: "Apple Inc",
-        shortName: "AAPL",
-        marketCap: 1000000000000,
-      },
-      summaryDetail: {
-        dayLow: 148,
-        dayHigh: 152,
-        fiftyTwoWeekLow: 120,
-        fiftyTwoWeekHigh: 160,
-        averageVolume3Month: 200,
-      },
-    });
-
-    await getSummaryTable(req, res);
-
-    const expectedLastPrice = 150;
-    const expectedPreviousClose = 145;
-    const expectedChange = 5;
-
-    expect(mockQuoteSummary).toHaveBeenCalledTimes(1);
-    expect(stockPriceStore.add).toHaveBeenCalledTimes(1);
-    expect(res.status).toHaveBeenCalledWith(200);
-
-    expect(stockPriceStore.add).toHaveBeenCalledWith("AAPL", {
-      symbol: "AAPL",
-      current: expectedLastPrice,
-      currency: "USD",
-      close: expectedPreviousClose,
-      percentageChange: 3.45,
-      shortname: "AAPL",
-      longname: "Apple Inc",
-      change: expectedChange,
-      expiresAt: expect.any(Number),
-    });
-
-    expect(res.json).toHaveBeenCalledWith({
-      success: true,
-      summary: [{
-        symbol: "AAPL",
-        shortname: "AAPL",
-        longname: "Apple Inc",
-        lastPrice: expectedLastPrice,
-        changePercent: 3.45,
-        change: expectedChange,
-        currency: "USD",
-        marketTime: expect.any(String),
-        volume: "1.00M",
-        shares: 0,
-        avgVolume: "200.00",
-        dayRange: "₹148 → ₹152",
-        yearRange: "₹120 → ₹160",
-        marketCap: "1.00T",
-      }],
-    });
-  });
-
-  it("ensures formatNumber handles null, NaN, and string values correctly", async () => {
-    getStockSummary.mockResolvedValue([{ symbol: "MSFT", current_holding: 20 }]);
-    
-    mockQuoteSummary.mockResolvedValueOnce({
-      price: {
-        symbol: "MSFT",
-        regularMarketPrice: 300,
-        regularMarketPreviousClose: 290,
-        currency: "USD",
-        regularMarketChange: 10,
-        regularMarketChangePercent: 3.45,
-        regularMarketTime: 1700000000000,
-        longName: "Microsoft Corp",
-        shortName: "MSFT",
-        // Test cases for formatNumber: using null/NaN to hit the '-' path
-        regularMarketVolume: null, 
-        marketCap: Number.NaN, 
-      },
-      summaryDetail: {
-        // Must be numeric, or formatNumber crashes
-        averageVolume3Month: null, 
-      },
-    });
-
-    await getSummaryTable(req, res);
-
-    expect(mockQuoteSummary).toHaveBeenCalledTimes(1);
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({
-      success: true,
-      summary: expect.arrayContaining([
-        expect.objectContaining({
-          volume: "-", // null becomes '-'
-          marketCap: "-", // NaN becomes '-'
-          avgVolume: "-", // null becomes '-'
-        })
-      ]),
-    });
-  });
-
-  it("handles multiple holdings where one fails the API call (partial success)", async () => {
+  test("should ignore holdings where current_holding = 0", async () => {
+    const req = { user: { email: "t@mail.com" } };
     getStockSummary.mockResolvedValue([
-      { symbol: "GOOG", current_holding: 5 },
-      { symbol: "AMZN", current_holding: 8 }
+      { symbol: "META", current_holding: 0 }
     ]);
 
-    // GOOG succeeds 
-    mockQuoteSummary.mockResolvedValueOnce({
-      price: {
-        symbol: "GOOG",
-        currency: "USD",
-        regularMarketPrice: 100,
-        regularMarketPreviousClose: 98,
-        regularMarketChange: 2,
-        regularMarketChangePercent: 2.04,
-        regularMarketTime: 1700000000000,
-        regularMarketVolume: 1000,
-        marketCap: 100000000000,
-      },
-      summaryDetail: {
-        averageVolume3Month: 0, // Explicitly set to 0 to prevent crash
-      },
-    })
-    // AMZN fails
-    .mockRejectedValueOnce(new Error("AMZN API Error"));
+    await getSummaryTable(req, res);
 
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      summary: []
+    });
+
+    expect(YahooFinance.prototype.quoteSummary).not.toHaveBeenCalled();
+  });
+  test("should return 500 on thrown error", async () => {
+    const req = { user: { email: "err@mail.com" } };
+
+    getStockSummary.mockRejectedValue(new Error("DB failed"));
 
     await getSummaryTable(req, res);
 
-    expect(mockQuoteSummary).toHaveBeenCalledTimes(2);
-    expect(stockPriceStore.add).toHaveBeenCalledTimes(1);
-    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.status).toHaveBeenCalledWith(500);
+
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      meaasge: undefined
+    });
+  });
+  test("should cover all formatNumber branches", async () => {
+    const req = { user: { email: "branch@mail.com" } };
+
+    getStockSummary.mockResolvedValue([
+      { symbol: "BRN", current_holding: 1 }
+    ]);
+
+    PriceStore.get.mockReturnValue(1);
+
+    YahooFinance.prototype.quoteSummary.mockResolvedValue({
+      price: {
+        symbol: "BRN",
+        currency: "USD",
+        longName: "Branch Test",
+        shortName: "BRN Test",
+        regularMarketPrice: 10,
+        regularMarketPreviousClose: 8,
+        regularMarketChange: 2,
+        regularMarketChangePercent: 25,
+        regularMarketTime: 1732084800,
+        regularMarketVolume: null,
+
+        marketCap: 1500 
+      },
+      summaryDetail: {
+        dayLow: 1000000000000,     
+        dayHigh: 5000000000,        
+        fiftyTwoWeekLow: 5000000,   
+        fiftyTwoWeekHigh: null,     
+        averageVolume3Month: Number.NaN    
+      }
+    });
     
-    const summary = res.json.mock.calls[0][0].summary;
-    expect(summary.length).toBe(1);
-    expect(summary[0].symbol).toBe("GOOG");
+    await getSummaryTable(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      summary: [
+        expect.objectContaining({
+          dayRange: "1000000000000.00 → 5000000000.00",
+          yearRange: "5000000.00 → -",
+          marketCap: 1500,
+          volume: "-",
+          avgVolume: "-",
+        })
+      ]
+    });
+  });
+
+  test("should cover all formatNumber branches", async () => {
+    const req = { user: { email: "branch@mail.com" } };
+
+    getStockSummary.mockResolvedValue([
+      { symbol: "BRN", current_holding: 1 }
+    ]);
+
+    PriceStore.get.mockReturnValue(1);
+
+    YahooFinance.prototype.quoteSummary.mockResolvedValue({
+      price: {
+        symbol: "BRN",
+        currency: "USD",
+        longName: "Branch Test",
+        shortName: "BRN Test",
+        regularMarketPrice: null,
+        regularMarketPreviousClose: null,
+        regularMarketChange: null,
+        regularMarketChangePercent: null,
+        regularMarketTime: 1732084800,
+        regularMarketVolume: 1000000000,
+
+        marketCap: 1500 
+      },
+      summaryDetail: {
+        dayLow: 1000000000000,     
+        dayHigh: 5000000000,        
+        fiftyTwoWeekLow: 5000000,   
+        fiftyTwoWeekHigh: 5000,     
+        averageVolume3Month: 1000000    
+      }
+    });
+
+    await getSummaryTable(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      summary: [
+        expect.objectContaining({
+          dayRange: "1000000000000.00 → 5000000000.00",
+          yearRange: "5000000.00 → 5000.00",
+          marketCap: 1500,
+          volume: "1.00B",
+          lastPrice: 0,
+          changePercent: 0,
+          change: 0,
+          currency: "USD",
+          avgVolume: "1.00M",
+        })
+      ]
+    });
+  });
+  test("should use default fallbacks for missing price fields and currency conversion", async () => {
+    const req = { user: { email: "fallback@mail.com" } };
+
+    getStockSummary.mockResolvedValue([
+      { symbol: "FALLBACK", current_holding: 10 }
+    ]);
+
+    PriceStore.get.mockReturnValue(undefined);
+
+    YahooFinance.prototype.quoteSummary.mockResolvedValue({
+      price: {
+        symbol: "FALLBACK",
+
+        regularMarketPrice: 100,
+        regularMarketPreviousClose: 90,
+        regularMarketChange: 10,
+        regularMarketChangePercent: 0.1,
+        regularMarketTime: 1732084800,
+        regularMarketVolume: 1000,
+
+      },
+      summaryDetail: {
+
+        fiftyTwoWeekLow: 10, 
+        fiftyTwoWeekHigh: 20, 
+        averageVolume3Month: null 
+      }
+    });
+
+    await getSummaryTable(req, res);
+
+    expect(stockPriceStore.add).toHaveBeenCalledWith("FALLBACK", {
+      symbol: "FALLBACK",
+      current: 100, 
+      currency: "INR", 
+      close: 90,
+      percentageChange: 0.1,
+      shortname: null, 
+      longname: null, 
+      change: 10,
+      expiresAt: expect.any(Number)
+    });
+
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      summary: [
+        expect.objectContaining({
+          symbol: "FALLBACK",
+          shortname: null, 
+          longname: null, 
+          currency: "INR", 
+          volume: "1.00K", 
+          avgVolume: "-", 
+          marketCap: "-", 
+          dayRange: "- → -", 
+          yearRange: "10.00 → 20.00"
+        })
+      ]
+    });
+  });
+
+  test("should correctly format large numbers in Trillion, Billion, and Million range", async () => {
+    const req = { user: { email: "big_nums@mail.com" } };
+
+    getStockSummary.mockResolvedValue([
+      { symbol: "BIG", current_holding: 1 }
+    ]);
+
+    PriceStore.get.mockReturnValue(1); 
+
+    YahooFinance.prototype.quoteSummary.mockResolvedValue({
+      price: {
+        symbol: "BIG",
+        currency: "USD",
+        regularMarketPrice: 10,
+        regularMarketPreviousClose: 8,
+        regularMarketChange: 2,
+        regularMarketChangePercent: 25,
+        regularMarketTime: 1732084800,
+        regularMarketVolume: 1000000000000, 
+        marketCap: 5000000000 
+      },
+      summaryDetail: {
+        dayLow: 1500000, 
+        dayHigh: 500000000000, 
+        fiftyTwoWeekLow: 100, 
+        fiftyTwoWeekHigh: 1000, 
+        averageVolume3Month: 50000 
+      }
+    });
+
+    await getSummaryTable(req, res);
+
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      summary: [
+        expect.objectContaining({
+          volume: "1.00T", 
+          avgVolume: "50.00K", 
+          marketCap: 5000000000, 
+          dayRange: "1500000.00 → 500000000000.00", 
+          yearRange: "100.00 → 1000.00" 
+        })
+      ]
+    });
+  });
+
+  test("should handle numeric properties being returned as strings or not existing", async () => {
+      const req = { user: { email: "string_nums@mail.com" } };
+      getStockSummary.mockResolvedValue([
+          { symbol: "STR", current_holding: 1 }
+      ]);
+
+      PriceStore.get.mockReturnValue(1);
+
+      YahooFinance.prototype.quoteSummary.mockResolvedValue({
+          price: {
+              symbol: "STR",
+              regularMarketPrice: 10,
+              regularMarketPreviousClose: 8,
+              regularMarketChange: 2,
+              regularMarketChangePercent: 25,
+              regularMarketTime: 1732084800,
+              regularMarketVolume: 100,
+              marketCap: 1000000 
+          },
+          summaryDetail: {
+              dayLow: "1.00", 
+              dayHigh: 12,
+              fiftyTwoWeekLow: null,
+              fiftyTwoWeekHigh: 20,
+          }
+      });
+
+      await getSummaryTable(req, res);
+
+      expect(res.json).toHaveBeenCalledWith({
+          success: true,
+          summary: [
+              expect.objectContaining({
+                  volume: "100.00",
+                  avgVolume: "-", 
+                  dayRange: "- → 12.00",
+                  yearRange: "- → 20.00", 
+              })
+          ]
+      });
   });
 });

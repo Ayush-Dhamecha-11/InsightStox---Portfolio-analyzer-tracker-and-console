@@ -12,7 +12,7 @@
         "!src/controllers/Portfolio/portfolio.controller.js",
         "!src/controllers/user/user.controller.js",
         "!src/controllers/user/deleteAccount.controller.js",
-        "!src/routes/**"
+        "!src/routes/"
     ],
     "mutator": {
         "excludedMutations": ["StringLiteral","ObjectLiteral","FunctionCall","MethodCall","OptionalChaining"]
@@ -37,7 +37,7 @@
                 "^.+\\.js$": "babel-jest"
             },
 
-            "testMatch": ["**/test/src/**/*.test.js","!**/test/src/controllers/user/deleteAccount.controller.test.js","!**/test/src/controllers/dashBoard/searchStock.controller.test.js"]
+            "testMatch": ["/test/src/**/*.test.js","!/test/src/controllers/user/deleteAccount.controller.test.js","!*/test/src/controllers/dashBoard/searchStock.controller.test.js"]
         }
     }
 

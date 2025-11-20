@@ -17,11 +17,11 @@ export const getPortfolioHoldings = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email required" });
     }
 
-    const portfolio = await getStockSummary(email);
+    let portfolio = await getStockSummary(email);
     if (!portfolio || portfolio.length === 0) {
       return res.status(404).json({ success: false, message: "No holdings found" });
     }
-
+    portfolio = portfolio.filter(item => item.current_holding > 0);
     const results = await Promise.allSettled(
       portfolio.map(stock =>
         getPrice(stock.symbol)
@@ -66,7 +66,7 @@ export const getPortfolioHoldings = async (req, res) => {
 
       return {
         symbol: stock.symbol,
-        status: status,
+        status: status ?? "UNKNOWN",
         shares: qty,
         lastPrice: formatNumber(lastPrice),
         avgPrice: formatNumber(avgPrice),
