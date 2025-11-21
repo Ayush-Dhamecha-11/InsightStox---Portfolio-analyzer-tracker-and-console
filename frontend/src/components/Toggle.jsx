@@ -1,15 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import "./Toggle.css";
 
-const Toggle = () => {
-  const [isOn, setIsOn] = useState(false);
-
+const Toggle = ({ value, onChange }) => {
   return (
     <label className="toggle-switch">
       <input
         type="checkbox"
-        checked={isOn}
-        onChange={() => setIsOn(!isOn)}
+        checked={value}
+        onChange={(e) => onChange(e.target.checked)}
       />
       <span className="slider"></span>
     </label>
