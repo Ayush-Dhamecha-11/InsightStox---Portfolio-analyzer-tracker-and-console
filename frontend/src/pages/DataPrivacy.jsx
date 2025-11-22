@@ -72,7 +72,7 @@ export const DataPrivacy = () => {
     try {
       // adjust endpoint / payload key to match your backend contract
       await axios.patch(
-        import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/toggleAISuggestion",
+        import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/toggleAiSuggestion",
         { aisuggestion: value },
         { withCredentials: true }
       );
@@ -85,37 +85,47 @@ export const DataPrivacy = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchDataPrivacySettings = async () => {
-      try {
-        const res = await axios.get(
-          import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/myProfile",
-          { withCredentials: true }
-        );
+useEffect(() => {
+  const fetchDataPrivacySettings = async () => {
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/Myprofile",
+        { withCredentials: true }
+      );
 
-        console.log("Fetched successfully:", res.data);
-
-        const user = res.data?.data;
-        if (user) {
-          setUserInfo({
-            name: user.name,
-            email: user.email,
-            profimg: user.profileImage,
-          });
-
-          // set toggle from backend field (user.aisuggestion used previously)
-          setAiToggle(Boolean(user.aisuggestion));
-        }
-      } catch (err) {
-        console.error(
-          "Error fetching user info:",
-          err.response?.data?.message || err.message
-        );
+      const user = res.data?.data;
+      if (user) {
+        setUserInfo({
+          name: user.name,
+          email: user.email,
+          profimg: user.profileImage,
+        });
+        setAiToggle(Boolean(user.aisuggestion));
       }
-    };
+    } catch (err) {
+      console.error("Error fetching user info:", err);
+    }
+  };
 
-    fetchDataPrivacySettings();
-  }, []);
+  const fetchAIToggleChange = async () => {
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/getDataAndPrivacy",
+        { withCredentials: true }
+      );
+
+      const pref = res.data?.data?.aisuggestion;
+      setAiToggle(Boolean(pref));
+      console.log("Fetched AI Suggestion Preference:", pref);
+    } catch (err) {
+      console.error("Error fetching AI Suggestion Preference:", err);
+    }
+  };
+
+  fetchDataPrivacySettings();
+  fetchAIToggleChange();
+}, []);
+
 
   return (
     <div className="Page">
