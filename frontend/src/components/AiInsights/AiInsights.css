@@ -2,7 +2,7 @@
 .insights-card {
   flex: 1;
   min-height: 40px;
-  min-width: 625px;
+  min-width: 710px;
   max-width: 45%;
   height: 500px;
   border: 1px solid white;
@@ -73,6 +73,9 @@
 }
 
 @media (max-width: 600px) {
+    .insights-card {
+      width:100%;
+  }
   .ai-title {
     margin-left: 12px;
     font-size: 1.1rem;

@@ -169,7 +169,7 @@
     line-height: 1.35;
   }
 
-.section-wrapper button,
+/* .section-wrapper button,
 .section-wrapper .btn,
 .section-wrapper .primary-btn {
     font-size: 1rem;
@@ -178,7 +178,7 @@
     width: 100%;
     display: block;
     box-sizing: border-box;
-  }
+  } */
 
   .table-responsive {
     overflow-x: auto;
@@ -354,11 +354,29 @@
   }
 
   
-  .portfoliochart-buttons,
-  .portfoliochart-btn,
+  /* Keep chart buttons concise on very small screens: allow wrapping instead of full-width */
+  .portfoliochart-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .portfoliochart-btn {
+    display: inline-block;
+    width: auto;
+    padding: 8px 12px;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
+
   .see-more-link,
-  .view-all,
-  .see-more-link {
+  .view-all {
     width: 100%;
     display: block;
     text-align: left;

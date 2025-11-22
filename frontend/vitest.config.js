@@ -9,5 +9,10 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: "./test/setup.js",
     css: false,
+      poolOptions: {
+      threads: {
+      execArgv: ["--experimental-vm-modules"]
+    }
+  }
   },
 });
