@@ -5,14 +5,17 @@ import DashboardHeader from '../components/Dashboard-Header.jsx';
 import Footer from '../components/Footer.jsx';
 import { FieldValue } from "../components/FieldValue.jsx";
 import { MarketNewsItem } from "../components/MarketMovers/MarketMovers.jsx";
+import StockAction from "../components/StockAction";
+import StockChart from "../components/StockChart";
 import './StockDetails.css';
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useAppContext } from "../context/AppContext.jsx";
+import { formatDate, formatLargeNumber, formatPercentage, formatSmallNumber, roundTo } from "../utils/dataCleaningFuncs.jsx";
 
 export const StockDetails = () => {
     const BASE_URL = import.meta.env.VITE_BACKEND_LINK;
     const [darkMode, setDarkMode] = useState(true);
-    const {userDetails} = useAppContext();
+    const { userDetails } = useAppContext();
     const [buyStock, handleBuyStock] = useState("");
     const [sellStock, handleSellStock] = useState("");
     const [addedStock, handleAdd] = useState("");
@@ -28,54 +31,25 @@ export const StockDetails = () => {
         Company: {},
     });
     const [newsData, setMarketData] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [modalAction, setModalAction] = useState("");
+    axios.defaults.withCredentials = true;
+
+    const openAddModel = () => {
+        setModalAction("BUY");
+        setShowModal(true);
+    };
+
+    const openRmvModel = () => {
+        setModalAction("SELL");
+        setShowModal(true);
+    };
+
+    const closeModel = () => {
+        setShowModal(false);
+    }
 
     console.log(symbol);
-
-    const roundTo = (num, decimals = 2) => {
-        if (num === null || num === undefined || isNaN(Number(num))) return "--";
-        return Number.parseFloat(num).toFixed(decimals);
-    };
-
-    const formatPercentage = (num, decimals = 2) => {
-        if (num === null || num === undefined || isNaN(Number(num))) return "--";
-        const val = Number(num);
-        const percent = Math.abs(val) < 1 ? val * 100 : val;
-        return percent.toFixed(decimals);
-    };
-
-    const formatLargeNumber = (num) => {
-        if (num === null || num === undefined || isNaN(Number(num))) return "--";
-
-        const val = Number(num);
-        const absNum = Math.abs(val);
-        if (absNum >= 1e12) return (val / 1e12).toFixed(2) + "T";
-        if (absNum >= 1e9) return (val / 1e9).toFixed(2) + "B";
-        if (absNum >= 1e6) return (val / 1e6).toFixed(2) + "M";
-        if (absNum >= 1e3) return (val / 1e3).toFixed(2) + "K";
-        return val.toFixed(2);
-    };
-
-    const formatSmallNumber = (num) => {
-        if (num === null || num === undefined || isNaN(Number(num))) return "--";
-        const val = Number.parseFloat(num);
-        if (Math.abs(val) < 1e-3) return "0.00";
-        return val.toFixed(2);
-    };
-
-    const formatDate = (isoString) => {
-        if (!isoString) return "--";
-        try {
-            const date = new Date(isoString);
-            return date.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric"
-            });
-        } catch {
-            return "--";
-        }
-    };
-
 
     useEffect(() => {
         const getStockDetails = async () => {
@@ -162,11 +136,21 @@ export const StockDetails = () => {
         getStockDetails();
     }, [symbol]);
 
+    const handleWatchlist = async () => {
+        try {
+            await axios.post(`${BASE_URL}/api/v1/dashBoard/addToWatchlist`, {symbol: symbol}, { withCredentials: true });
+            alert("Added to watchlist");
+        }
+        catch (error) {
+            console.error("Error in adding the stock to watchlist:", error);
+        }
+    };
+
     useEffect(() => {
         const getNews = async () => {
             try {
                 const news = await axios.get(`${BASE_URL}/api/v1/dashBoard/news/${symbol}`, { withCredentials: true });
-                setMarketData(news?.data || news);
+                setMarketData(news?.data?.news || news?.data);
             }
             catch (error) {
                 console.error("Error fetching news:", error);
@@ -177,18 +161,30 @@ export const StockDetails = () => {
 
     return (
         <div className="stk-main-page-for-stock">
-            <Navbar darkMode={darkMode} setDarkMode={setDarkMode} pageType="stock-details"
-                profileData={{ name: userDetails?.name , email: userDetails?.email }} />
+            <Navbar darkMode={darkMode} setDarkMode={setDarkMode} pageType={`stockdetails/:${symbol}`}
+                profileData={{ name: userDetails?.name, email: userDetails?.email, profileImage: userDetails?.profileImage }} />
             <DashboardHeader darkMode={darkMode} />
             <div className="stk-empty"></div>
             <div className="stk-stock-info-page">
 
                 <div className="stk-stock-head">
                     <div className="stk-stock-name">{symbol}</div>
-                    <button className="stk-add" value="Add" onClick={handleBuyStock}>Add</button>
-                    <button className="stk-rmv" value="Remove" onClick={handleSellStock}>Remove</button>
-                    <button className="stk-add-watchlist" val="Add-w" onClick={handleAdd}>Add to watchlist</button>
+                    <button className="stk-add" value="Add" onClick={openAddModel}>Add</button>
+                    <button className="stk-rmv" value="Remove" onClick={openRmvModel}>Remove</button>
+                    <button className="stk-add-watchlist" val="Add-w" onClick={handleWatchlist}>Add to watchlist</button>
                 </div>
+
+                {showModal && (
+                    <StockAction
+                        action={modalAction}
+                        handler={setModalAction}
+                        symbol={symbol}
+                        currPrice={stockData.priceInfo.currentPrice}
+                        priceChange={stockData.priceInfo.change}
+                        pricePercentChange={stockData.priceInfo.changePercentage}
+                        onClose={closeModel}
+                    />
+                )}
 
                 <div className="stk-stock-price">
                     <div className="stk-abs">{stockData.priceInfo?.currentPrice ?? stockData.priceInfo?.previousClose}</div>
@@ -199,8 +195,8 @@ export const StockDetails = () => {
                                 stockData?.priceInfo?.change > 0
                                     ? "#00C853"
                                     : stockData?.priceInfo?.change < 0
-                                    ? "#C81B00"
-                                    : "#FFF",   
+                                        ? "#C81B00"
+                                        : "#FFF",
                         }}
                     >
                         {stockData?.priceInfo?.change > 0 ? `+${stockData?.priceInfo?.change}` : stockData?.priceInfo?.change} (
@@ -215,7 +211,9 @@ export const StockDetails = () => {
                     <a className="stk-detail-button" href="#heads5">About Company</a>
                 </div>
 
-                <div className="stk-stock-chart">{/*to put*/}</div>
+                <div className="stk-stock-chart">
+                    <StockChart symbol={symbol} />
+                </div>
 
                 <div id="heads1">Performance</div>
                 <div className="stk-performance">
@@ -483,7 +481,7 @@ export const StockDetails = () => {
                                     <MarketNewsItem
                                         key={index}
                                         headline={news.title}
-                                        time={news.providerPublishTime}
+                                        time={formatDate(news.providerPublishTime)}
                                         link={news.link} />
                                 ))}
                             </div>
@@ -517,7 +515,7 @@ export const StockDetails = () => {
                         </div>
                     </div>
                     <span className="stk-about-desc">{stockData.Company?.longdescription}</span>
-                    <a className="stk-company-link" href={stockData.Company.website}>{stockData.Company.website}</a>
+                    <a className="stk-company-link" href={stockData.Company.website} target="_blank" rel="noopener noreferrer">{stockData.Company.website}</a>
                 </div>
 
 

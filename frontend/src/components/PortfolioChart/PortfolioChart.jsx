@@ -196,13 +196,14 @@ export default function PortfolioChart() {
     if (range === "30d") {
       const sliced = daily.slice(-30);
 
-      labels = sliced.map((d) => {
-        const date = new Date(d.date);
-        const day = date.getDate();
-        const monthShort = date.toLocaleDateString("en-US", { month: "short" });
-        return day === 1 ? `${monthShort} 1` : String(day);
-      });
-      setHiddenDates(sliced.map((d) => d.date));
+        labels = sliced.map((d) => {
+          const date = new Date(d.date);
+          const day = date.getDate();
+          const monthShort = date.toLocaleDateString("en-US", { month: "short" });
+          // Show month name only when day === 1 (e.g., "Nov 1"), otherwise show day number only
+          return day === 1 ? `${monthShort} 1` : String(day);
+        });
+        setHiddenDates(sliced.map((d) => d.date));
 
       values = sliced.map((d) => d.valuation);
     }
@@ -235,20 +236,30 @@ export default function PortfolioChart() {
       values = sliced.map((d) => d.valuation);
     }
 
-    setChartData({
-      labels,
-      datasets: [
-        {
-          label: "Portfolio Value",
-          data: values,
-          borderColor: "#00c853",
-          backgroundColor: "rgba(0, 200, 83, 0.15)",
-          tension: 0.35,
-          fill: false,
-          pointRadius: 0,
-        },
-      ],
-    });
+      setChartData({
+        labels,
+        datasets: [
+          {
+            label: "Portfolio Value",
+            data: values,
+            borderColor: "#00c853",
+            backgroundColor: "rgba(0, 200, 83, 0.15)",
+            tension: 0.35,
+            fill: false,
+            pointRadius: 0,
+          },
+        ],
+      });
+    } catch (err) {
+      console.error("Error fetching valuation data:", err);
+      setError(
+        err.response?.status === 401
+          ? "Session expired. Please log in again."
+          : "Failed to fetch portfolio performance data."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

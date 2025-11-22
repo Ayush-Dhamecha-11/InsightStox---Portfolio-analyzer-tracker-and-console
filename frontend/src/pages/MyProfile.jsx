@@ -13,15 +13,7 @@ import { Sidebar } from "../components/Sidebar.jsx";
 import { useAppContext } from "../context/AppContext";
 
 export const MyProfile = () => {
-    const [userInfo, setUserInfo] = useState({
-        name: "",
-        email: "",
-        profimg: "",
-        investmentExp: "",
-        riskProfile: "",
-        InvHorizon: "",
-        FinGoal: ""
-    });
+    const [userInfo, setUserInfo] = useState({});
     const { darkMode, setDarkMode } = useAppContext();
     const fileInputRef = useRef(null);
     const [isEditingInfo, setIsEditingInfo] = useState(false);
@@ -44,10 +36,12 @@ export const MyProfile = () => {
     const [resendCountdown, setResendCountdown] = useState(0);
 
     const { handlePicChange, handleSaveName, handleSavePass, resendOtp,
-         verifyOtpAndReset, handleFinGoals, handleInvExp, handleInvHorizon, handleRiskProf } = MyProfileHandlers(
-            { setUserInfo, setIsEditingInfo, editedName, resendCountdown,
-              currPass, newPass, confirmPass, setIsSendingOtp, setOtp, setOtpError, setResendCountdown,
-              setIsVerifyingOtp, setConfirmPass, setCurrPass, setNewPass, setShowOtpModal, otp, setIsEditingPass});
+        verifyOtpAndReset, handleFinGoals, handleInvExp, handleInvHorizon, handleRiskProf } = MyProfileHandlers(
+            {
+                setUserInfo, setIsEditingInfo, editedName, resendCountdown,
+                currPass, newPass, confirmPass, setIsSendingOtp, setOtp, setOtpError, setResendCountdown,
+                setIsVerifyingOtp, setConfirmPass, setCurrPass, setNewPass, setShowOtpModal, otp, setIsEditingPass
+            });
 
     axios.defaults.withCredentials = true;
 
@@ -64,15 +58,7 @@ export const MyProfile = () => {
                 const user = res.data?.data;
 
                 if (user) {
-                    setUserInfo({
-                        name: user.name,
-                        email: user.email,
-                        profimg: user.profileImage,
-                        investmentExp: user.investmentExperience,
-                        riskProfile: user.riskProfile,
-                        InvHorizon: user.investmentHorizon,
-                        FinGoal: user.financialGoals
-                    });
+                    setUserInfo(user);
                 } else {
                     console.warn("User data not found in response:", res.data);
                 }
@@ -136,10 +122,10 @@ export const MyProfile = () => {
     }, [resendCountdown]);
 
     function checkCountdown() {
-        if(resendCountdown > 0){
+        if (resendCountdown > 0) {
             return `Resend (${resendCountdown}s)`;
         }
-        else{
+        else {
             return isSendingOtp ? "Sending..." : "Resend";
         }
     }
@@ -274,17 +260,21 @@ export const MyProfile = () => {
                         </div>
                         <hr />
 
-                        <div className="myPage_InfRow4">
-                            <label>Linked accounts</label>
-                            <div className="myPage_LinkedBox">
-                                <img src={GoogleLogo} alt="Google Logo" />
-                                <div className="myPage_InsideBox">
-                                    <span className="myPage_ServiceName">Google</span>
-                                    <span className="myPage_AccName">Ayush Dhamecha</span>
+                        {userInfo.registrationMethod === "google" && (
+                            <>    
+                            <div className="myPage_InfRow4">
+                                <label>Linked accounts</label>
+                                <div className="myPage_LinkedBox">
+                                    <img src={GoogleLogo} alt="Google Logo" />
+                                    <div className="myPage_InsideBox">
+                                        <span className="myPage_ServiceName">Google</span>
+                                        <span className="myPage_AccName">{userInfo.name}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <hr />
+                            <hr />
+                        </>
+                        )}
 
                         <h2 className="myPage_InvProfile"> Your investment profile </h2>
                         <span className="myPage_AIspan"> This field helps us to provide you better suggestions.</span>
@@ -368,7 +358,7 @@ export const MyProfile = () => {
                             </button>
                             <button className="myPage_OTPResend" onClick={resendOtp} disabled={isSendingOtp || resendCountdown > 0}>
                                 {checkCountdown()}
-                                
+
                             </button>
                             <button className="myPage_OTPCancel" onClick={() => { setShowOtpModal(false); setOtp(""); setOtpError(""); }}>
                                 Cancel
