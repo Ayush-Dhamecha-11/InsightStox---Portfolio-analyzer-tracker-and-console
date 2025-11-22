@@ -223,7 +223,13 @@ export const ActivitySessionHistory = () => {
             />
 
             <div className="Container">
-                <Sidebar primaryData={userInfo} />
+            <Sidebar
+              primaryData={{
+                name: userInfo.name,
+                email: userInfo.email,
+                profileImage: userInfo.profimg
+              }}
+            />
 
                 <main className="MainContent">
                     <div className="activity-and-session">
