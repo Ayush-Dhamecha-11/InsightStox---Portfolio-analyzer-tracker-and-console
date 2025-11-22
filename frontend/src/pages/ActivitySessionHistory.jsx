@@ -5,19 +5,16 @@ import Footer from "../components/Footer.jsx";
 import { Sidebar } from "../components/Sidebar.jsx";
 import axios from "axios";
 
+// Reusable hook for See More
 const useSeeMore = (initialData, limit) => {
     const [fullData, setFullData] = useState(initialData);
     const [showAll, setShowAll] = useState(false);
 
     const displayData = showAll ? fullData : fullData.slice(0, limit);
 
-    const toggleSeeMore = useCallback(() => {
-        setShowAll(prev => !prev);
-    }, []);
+    const toggleSeeMore = () => setShowAll(prev => !prev);
 
-    const updateFullData = useCallback((newData) => {
-        setFullData(newData);
-    }, []);
+    const updateFullData = (newData) => setFullData(newData);
 
     const isExpandable = fullData.length > limit;
 
@@ -34,58 +31,35 @@ export const ActivitySessionHistory = () => {
         profimg: "",
     });
 
-    const initialActiveSessions = [
-        { id: 1, device: "Chrome - Windows (Current Session)", lastActive: "10:42 AM", isCurrent: true },
-        { id: 2, device: "Safari - iPhone", lastActive: "9:15 AM", isCurrent: false },
-        { id: 3, device: "Edge - MacOS", lastActive: "2:35 PM", isCurrent: false },
-        { id: 4, device: "Firefox - Linux", lastActive: "8:00 AM", isCurrent: false },
-        { id: 5, device: "Mobile App - Android", lastActive: "7:00 AM", isCurrent: false },
-    ];
-    // NOTE: isExpandable and toggleSeeMore properties are no longer used for sessions.
-    const { 
-        displayData: activeSessions, 
-        updateFullData: updateActiveSessionsData 
-    } = useSeeMore(initialActiveSessions, 3);
+    // Active Sessions
+    const [activeSessions, setActiveSessions] = useState([]);
 
-    const initialRecentActivities = [
-        { id: 1, action: "Login from Chrome - Windows", date: "Oct 10, 2025" },
-        { id: 2, action: "Viewed AI Recommendation for Portfolio", date: "Oct 9, 2025" },
-        { id: 3, action: "Edited Portfolio: Added TCS and Infosys", date: "Oct 7, 2025" },
-        { id: 4, action: "Risk analysis performed on holdings", date: "Oct 4, 2025" },
-        { id: 5, action: "Accessed settings page", date: "Oct 3, 2025" },
-        { id: 6, action: "Logout successful", date: "Oct 2, 2025" },
-    ];
-    const { 
-        displayData: recentActivities, 
-        showAll: showAllRecentActivities, 
-        toggleSeeMore: toggleRecentActivities, 
-        isExpandable: isActivitiesExpandable,
-        updateFullData: updateRecentActivitiesData
-    } = useSeeMore(initialRecentActivities, 4);
-
-    const initialSecurityAlerts = [
-        { id: 1, text: "Password changed successfully", date: "Oct 5, 2025" },
-        { id: 2, text: "Data & Privacy settings updated successfully", date: "Oct 2, 2025" },
-        { id: 3, text: "Account email verified", date: "Sept 28, 2025" },
-        { id: 4, text: "Two-Factor Authentication enabled", date: "Sept 20, 2025" },
-    ];
-    const { 
-        displayData: securityAlerts, 
-        showAll: showAllSecurityAlerts, 
-        toggleSeeMore: toggleSecurityAlerts, 
+    // Security Alerts
+    const {
+        displayData: securityAlerts,
+        showAll: showAllSecurityAlerts,
+        toggleSeeMore: toggleSecurityAlerts,
         isExpandable: isAlertsExpandable,
         updateFullData: updateSecurityAlertsData
-    } = useSeeMore(initialSecurityAlerts, 3);
+    } = useSeeMore([], 3);
 
+    // Activity History
+    const {
+        displayData: recentActivities,
+        showAll: showAllRecentActivities,
+        toggleSeeMore: toggleRecentActivities,
+        isExpandable: isActivitiesExpandable,
+        updateFullData: updateRecentActivitiesData
+    } = useSeeMore([], 4);
+
+    // Fetch Functions
     useEffect(() => {
-        const fetchSessionHistory = async () => {
+        const fetchProfileData = async () => {
             try {
                 const res = await axios.get(
                     import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/myProfile",
                     { withCredentials: true }
                 );
-
-                console.log("Fetched successfully:", res.data);
 
                 const user = res.data?.data;
                 const history = res.data?.history;
@@ -97,115 +71,147 @@ export const ActivitySessionHistory = () => {
                         profimg: user.profileImage,
                     });
 
-                    if (history?.sessions) {
-                        updateActiveSessionsData(history.sessions);
-                    }
-                    if (history?.activities) {
+                    if (history?.activities)
                         updateRecentActivitiesData(history.activities);
-                    }
-                    if (history?.alerts) {
+
+                    if (history?.alerts)
                         updateSecurityAlertsData(history.alerts);
-                    }
                 }
             } catch (err) {
-                console.error(
-                    "Error fetching user info:",
-                    err.response?.data?.message || err.message
-                );
+                console.error("Error fetching profile:", err);
             }
         };
 
-        fetchSessionHistory();
-    }, [updateActiveSessionsData, updateRecentActivitiesData, updateSecurityAlertsData]); 
+        const fetchActiveSessions = async () => {
+            try {
+                const res = await axios.get(
+                    import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/activityAndSessionHistory",
+                    { withCredentials: true }
+                );
 
-    const [signoutFromAllDevices, setSignoutFromAllDevices] = useState(false);
-    const [downloadActivityRequested, setDownloadActivityRequested] = useState(false);
-    const [clearActivityHistory, setClearActivityHistory] = useState(false);
+                const sessions = res.data?.activeSessions;
 
-    const handleSignOut = useCallback( async (sessionId) => {
-        updateActiveSessionsData((prev) => prev.filter((s) => s.id !== sessionId));
-        //alert("Signed out from this device.");
+                if (sessions) {
+                    setActiveSessions(
+                        sessions.map((session) => ({
+                            id: session.token,
+                            device: `${session.browser_type} - ${session.os_type}`,
+                            lastActive: new Date(session.last_active_time).toLocaleString(),
+                        }))
+                    );
+                }
+            } catch (err) {
+                console.error("Error fetching active sessions:", err);
+            }
+        };
 
-        try{
-            const res = await axios.post(
+        const fetchSecurityAlerts = async () => {
+            try {
+                const res = await axios.get(
+                    import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/getAllSecurityAlerts",
+                    { withCredentials: true }
+                );
+
+                const alerts = res.data?.alerts;
+
+                if (alerts) {
+                    updateSecurityAlertsData(
+                        alerts.map((alert) => ({
+                            id: alert.createdAt,               // FIXED KEY
+                            text: alert.message,               // FIXED FIELD
+                            date: new Date(alert.createdAt).toLocaleDateString(),
+                        }))
+                    );
+                }
+            } catch (err) {
+                console.error("Error fetching security alerts:", err);
+            }
+        };
+
+        const fetchActivityHistory = async () => {
+            try {
+                const res = await axios.get(
+                    import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/getAllActivityHistory",
+                    { withCredentials: true }
+                );
+
+                const activities = res.data?.history;     // FIXED KEY
+
+                if (activities) {
+                    updateRecentActivitiesData(
+                        activities.map((activity) => ({
+                            id: activity.createdAt,          // FIXED KEY
+                            action: activity.message,        // FIXED FIELD
+                            date: new Date(activity.createdAt).toLocaleDateString(),
+                        }))
+                    );
+                }
+            } catch (err) {
+                console.error("Error fetching activity history:", err);
+            }
+        };
+
+        fetchProfileData();
+        fetchActiveSessions();
+        fetchSecurityAlerts();
+        fetchActivityHistory();
+    }, [updateRecentActivitiesData, updateSecurityAlertsData]);
+
+    // Sign out single device
+    const handleSignOut = async (sessionId) => {
+        setActiveSessions(prev => prev.filter(s => s.id !== sessionId));
+
+        try {
+            await axios.post(
                 import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/logoutSession",
                 { token: sessionId },
                 { withCredentials: true }
             );
-            console.log("Signed out from session:", res.data);  
+        } catch (err) {
+            console.error("Error signing out:", err);
         }
-        catch(err){
-            console.error(
-                "Error signing out from session:",
-                err.response?.data?.message || err.message
-            );  
-        }
-    }, [updateActiveSessionsData]);
+    };
 
-    const handleSignOutAll = useCallback( async () => {
-        updateActiveSessionsData([]);
-        setSignoutFromAllDevices(true);
-        //alert("Signed out from all devices.");
+    // Sign out all devices
+    const handleSignOutAll = async () => {
+        setActiveSessions([]);
 
-        try{
-            const res = await axios.post(
+        try {
+            await axios.post(
                 import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/logoutAllSessions",
                 {},
                 { withCredentials: true }
             );
-            console.log("Signed out from all devices:", res.data);
-            setSignoutFromAllDevices(false);
+        } catch (err) {
+            console.error("Error signing out all:", err);
         }
-        catch(err){
-            console.error(
-                "Error signing out from all devices:",
-                err.response?.data?.message || err.message
-            );  
-            setSignoutFromAllDevices(false);
-        }
-    }, [updateActiveSessionsData]);
+    };
 
-    const handleDownloadActivity = useCallback( async () => {
-        //alert("Your activity report is downloading...");
-        setDownloadActivityRequested(true);
-        try{
-            const res = await axios.get(
+    // Download Activity
+    const handleDownloadActivity = async () => {
+        try {
+            await axios.get(
                 import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/downloadActivityHistoryReport",
                 { withCredentials: true }
             );
-            console.log("Activity report download initiated:", res.data);
-            setDownloadActivityRequested(false);
+        } catch (err) {
+            console.error("Error downloading report:", err);
         }
-        catch(err){
-            console.error(
-                "Error downloading activity report:",
-                err.response?.data?.message || err.message
-            );  
-            setDownloadActivityRequested(false);
-        }
-    }, []);
+    };
 
-    const handleClearHistory = useCallback( async () => {
-        //alert("Your activity history has been cleared.");
-        setClearActivityHistory(true);
+    // Clear history
+    const handleClearHistory = async () => {
+        updateRecentActivitiesData([]);
 
-        try{
-            const res = await axios.delete(
+        try {
+            await axios.delete(
                 import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/clearActivityHistory",
                 { withCredentials: true }
             );
-            console.log("Activity history cleared:", res.data);
-            setClearActivityHistory(false);
+        } catch (err) {
+            console.error("Error clearing history:", err);
         }
-        catch(err){
-            console.error(
-                "Error clearing activity history:",
-                err.response?.data?.message || err.message
-            );  
-            setClearActivityHistory(false);
-        }
-        updateRecentActivitiesData([]); 
-    }, [updateRecentActivitiesData]);
+    };
 
     return (
         <div className="Page">
@@ -213,33 +219,22 @@ export const ActivitySessionHistory = () => {
                 darkMode={darkMode}
                 setDarkMode={setDarkMode}
                 pageType="myprofile"
-                profileData={{
-                    name: userInfo.name,
-                    email: userInfo.email,
-                    profileImage: userInfo.profimg,
-                }}
+                profileData={userInfo}
             />
 
             <div className="Container">
-                <Sidebar
-                    primaryData={{
-                        name: userInfo.name,
-                        email: userInfo.email,
-                        profileImage: userInfo.profimg,
-                    }}
-                />
+                <Sidebar primaryData={userInfo} />
 
                 <main className="MainContent">
                     <div className="activity-and-session">
                         <h2>Activity & Session History</h2>
                     </div>
 
+                    {/* Active Sessions */}
                     <div className="header-section">
                         <h3>Active Sessions</h3>
                         <p>Manage all devices currently logged into your account</p>
-                        
-                        {/* The 'See More' button logic for Active Sessions has been removed as requested. */}
-                        
+
                         <div className="activity-list">
                             {activeSessions.map((session) => (
                                 <div key={session.id} className="activity-item">
@@ -247,7 +242,10 @@ export const ActivitySessionHistory = () => {
                                     <span className="dot"></span>
                                     <span className="date">{session.lastActive}</span>
 
-                                    <button className="signout" onClick={() => handleSignOut(session.id)}>
+                                    <button
+                                        className="signout"
+                                        onClick={() => handleSignOut(session.id)}
+                                    >
                                         Sign Out
                                     </button>
                                 </div>
@@ -259,15 +257,13 @@ export const ActivitySessionHistory = () => {
                         </div>
                     </div>
 
-                    <div className="divider" /> 
+                    <div className="divider" />
 
+                    {/* Security Alerts */}
                     <div className="header-section">
                         <h3>Security Alerts</h3>
                         {isAlertsExpandable && (
-                            <button 
-                                className="seemore" 
-                                onClick={toggleSecurityAlerts}
-                            >
+                            <button className="seemore" onClick={toggleSecurityAlerts}>
                                 {showAllSecurityAlerts ? "See Less" : "See More"}
                             </button>
                         )}
@@ -275,22 +271,19 @@ export const ActivitySessionHistory = () => {
                         <div className="activity-list">
                             {securityAlerts.map((alert) => (
                                 <div key={alert.id} className="security-alerts">
-                                    <span className="dot"> </span>
-                                    &nbsp; {alert.text} — {alert.date}
+                                    <span className="dot"></span> {alert.text} — {alert.date}
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="divider" /> 
+                    <div className="divider" />
 
+                    {/* Activity History */}
                     <div className="header-section">
                         <h3>Activity History</h3>
                         {isActivitiesExpandable && (
-                            <button 
-                                className="seemore" 
-                                onClick={toggleRecentActivities}
-                            >
+                            <button className="seemore" onClick={toggleRecentActivities}>
                                 {showAllRecentActivities ? "See Less" : "See More"}
                             </button>
                         )}
@@ -298,8 +291,7 @@ export const ActivitySessionHistory = () => {
                         <div className="activity-list">
                             {recentActivities.map((activity) => (
                                 <div key={activity.id} className="security-alerts">
-                                    <span className="dot"></span>
-                                    &nbsp; {activity.action} — {activity.date}
+                                    <span className="dot"></span> {activity.action} — {activity.date}
                                 </div>
                             ))}
                         </div>
