@@ -82,7 +82,7 @@ const helpContent = {
   }
 };
 
-function HelpTopicModal({ topic, onNavigate}) {
+function HelpTopicModal({ topic, onNavigate, onClose }) {
  
   useEffect(() => {
     document.body.classList.add("modal-open");
@@ -92,7 +92,7 @@ function HelpTopicModal({ topic, onNavigate}) {
   const content = helpContent[topic];
   if (!content) return null;
    return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" onClick={onClose}>
       <div className="detailed-content-card" onClick={(e) => e.stopPropagation()}>
         <h3>{content.icon} {content.title}</h3>
         {content.body(onNavigate)}
@@ -268,7 +268,7 @@ export const HelpSupport = () => {
           {selectedTopic && (
             <HelpTopicModal 
               topic={selectedTopic} 
-
+              onClose={() => setSelectedTopic(null)}
               onNavigate={(path) => navigate(path)}
               />
           )}
