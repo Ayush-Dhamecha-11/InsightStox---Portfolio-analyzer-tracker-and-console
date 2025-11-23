@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "../pages/ActivitySessionHistory.css";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
@@ -52,17 +52,18 @@ export const ActivitySessionHistory = () => {
         updateFullData: updateRecentActivitiesData
     } = useSeeMore([], 4);
 
-    // Fetch Functions
+    // Fetch everything in one function
     useEffect(() => {
-        const fetchProfileData = async () => {
+        const fetchAllData = async () => {
             try {
-                const res = await axios.get(
+                // 1️⃣ Fetch Profile + Embedded Alerts & Activities
+                const profileRes = await axios.get(
                     import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/myProfile",
                     { withCredentials: true }
                 );
 
-                const user = res.data?.data;
-                const history = res.data?.history;
+                const user = profileRes.data?.data;
+                const history = profileRes.data?.history;
 
                 if (user) {
                     setUserInfo({
@@ -70,91 +71,96 @@ export const ActivitySessionHistory = () => {
                         email: user.email,
                         profimg: user.profileImage,
                     });
-
-                    if (history?.activities)
-                        updateRecentActivitiesData(history.activities);
-
-                    if (history?.alerts)
-                        updateSecurityAlertsData(history.alerts);
                 }
-            } catch (err) {
-                console.error("Error fetching profile:", err);
-            }
-        };
 
-        const fetchActiveSessions = async () => {
-            try {
-                const res = await axios.get(
+                if (history?.activities)
+                    updateRecentActivitiesData(
+                        history.activities.map(activity => ({
+                            id: activity.createdAt,
+                            action: activity.message,
+                            date: new Date(activity.createdAt).toLocaleString("en-IN", {
+                                timeZone: "Asia/Kolkata"
+                            }),
+                        }))
+                    );
+
+                if (history?.alerts)
+                    updateSecurityAlertsData(
+                        history.alerts.map(alert => ({
+                            id: alert.createdAt,
+                            text: alert.message,
+                            date: new Date(alert.createdAt).toLocaleString("en-IN", {
+                                timeZone: "Asia/Kolkata"
+                            }),
+                        }))
+                    );
+
+                // 2️⃣ Fetch Active Sessions
+                const sessionRes = await axios.get(
                     import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/activityAndSessionHistory",
                     { withCredentials: true }
                 );
 
-                const sessions = res.data?.activeSessions;
+                const sessions = sessionRes.data?.activeSessions;
 
                 if (sessions) {
                     setActiveSessions(
-                        sessions.map((session) => ({
+                        sessions.map(session => ({
                             id: session.token,
                             device: `${session.browser_type} - ${session.os_type}`,
-                            lastActive: new Date(session.last_active_time).toLocaleString(),
+                            lastActive: new Date(session.last_active_time).toLocaleString("en-IN", {
+                                timeZone: "Asia/Kolkata"
+                            }), // IST TIME
                         }))
                     );
                 }
-            } catch (err) {
-                console.error("Error fetching active sessions:", err);
-            }
-        };
 
-        const fetchSecurityAlerts = async () => {
-            try {
-                const res = await axios.get(
+                // 3️⃣ Fetch All Security Alerts (Full)
+                const alertsRes = await axios.get(
                     import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/getAllSecurityAlerts",
                     { withCredentials: true }
                 );
 
-                const alerts = res.data?.alerts;
+                const alerts = alertsRes.data?.alerts;
 
                 if (alerts) {
                     updateSecurityAlertsData(
-                        alerts.map((alert) => ({
-                            id: alert.createdAt,               // FIXED KEY
-                            text: alert.message,               // FIXED FIELD
-                            date: new Date(alert.createdAt).toLocaleDateString(),
+                        alerts.map(alert => ({
+                            id: alert.createdAt,
+                            text: alert.message,
+                            date: new Date(alert.createdAt).toLocaleString("en-IN", {
+                                timeZone: "Asia/Kolkata"
+                            }),
                         }))
                     );
                 }
-            } catch (err) {
-                console.error("Error fetching security alerts:", err);
-            }
-        };
 
-        const fetchActivityHistory = async () => {
-            try {
-                const res = await axios.get(
+                // 4️⃣ Fetch Full Activity History
+                const activityRes = await axios.get(
                     import.meta.env.VITE_BACKEND_LINK + "/api/v1/users/getAllActivityHistory",
                     { withCredentials: true }
                 );
 
-                const activities = res.data?.history;     // FIXED KEY
+                const activities = activityRes.data?.history;
 
                 if (activities) {
                     updateRecentActivitiesData(
-                        activities.map((activity) => ({
-                            id: activity.createdAt,          // FIXED KEY
-                            action: activity.message,        // FIXED FIELD
-                            date: new Date(activity.createdAt).toLocaleDateString(),
+                        activities.map(activity => ({
+                            id: activity.createdAt,
+                            action: activity.message,
+                            date: new Date(activity.createdAt).toLocaleString("en-IN", {
+                                timeZone: "Asia/Kolkata"
+                            }),
                         }))
                     );
                 }
+
             } catch (err) {
-                console.error("Error fetching activity history:", err);
+                console.error("Error fetching all data:", err);
             }
         };
 
-        fetchProfileData();
-        fetchActiveSessions();
-        fetchSecurityAlerts();
-        fetchActivityHistory();
+        fetchAllData();
     }, [updateRecentActivitiesData, updateSecurityAlertsData]);
 
     // Sign out single device
@@ -223,13 +229,13 @@ export const ActivitySessionHistory = () => {
             />
 
             <div className="Container">
-            <Sidebar
-              primaryData={{
-                name: userInfo.name,
-                email: userInfo.email,
-                profileImage: userInfo.profimg
-              }}
-            />
+                <Sidebar
+                    primaryData={{
+                        name: userInfo.name,
+                        email: userInfo.email,
+                        profileImage: userInfo.profimg
+                    }}
+                />
 
                 <main className="MainContent">
                     <div className="activity-and-session">
