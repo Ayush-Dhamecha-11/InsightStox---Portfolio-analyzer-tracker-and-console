@@ -111,50 +111,76 @@ test("Sign Up Now button sets sessionStorage as expected", () => {
   expect(sessionStorage.getItem("isLogin")).toBe("false");
   expect(sessionStorage.getItem("forgotpassword")).toBe("false");
 });
-test("FAQ toggles open and closed", () => {
- const { container } = render(<Home />);
+test("all FAQ items toggle open and closed", () => {
+  const { container } = render(<Home />);
 
-  const arrowIcon = screen.getAllByAltText(/arrow logo/i)[0];
+  // Get all FAQ arrows — there are 5 FAQ questions
+  const arrows = screen.getAllByAltText(/arrow logo/i);
 
-  // Initially answer hidden
-  const answer = container.querySelector(".answer_text");
-  expect(answer).toHaveStyle({ display: "none" });
+  // Ensure we found 5
+  expect(arrows.length).toBe(5);
 
-  // Click to open
-  fireEvent.click(arrowIcon);
-  expect(answer).toHaveStyle({ display: "block" });
+  // For each FAQ item
+  arrows.forEach((arrow, index) => {
+    // Select the corresponding answer (each .answer_text in order)
+    const answers = container.querySelectorAll(".answer_text");
+    const answer = answers[index];
 
-  // Click again to close
-  fireEvent.click(arrowIcon);
-  expect(answer).toHaveStyle({ display: "none" });
+    // Ensure initial state is hidden
+    expect(answer).toHaveStyle({ display: "none" });
+
+    // Click arrow → expands
+    fireEvent.click(arrow);
+    expect(answer).toHaveStyle({ display: "block" });
+
+    // Click again → collapses
+    fireEvent.click(arrow);
+    expect(answer).toHaveStyle({ display: "none" });
+  });
 });
 
-test("expands a feature card when clicked", () => {
-  render(<Home />);
 
-  const cardTitle = screen.getByText("Dynamic Portfolio Tools");
-  const cardDiv = cardTitle.closest(".features_card");
+test("all feature cards expand individually when clicked", () => {
+  const { container } = render(<Home />);
 
-  fireEvent.click(cardDiv);
+  // List of card titles (in order)
+  const cardTitles = [
+    "Dynamic Portfolio Tools",
+    "Unified Dashboard",
+    "Smart Watchlist",
+    "Intelligent Insights",
+  ];
 
-  expect(cardDiv.classList.contains("expanded")).toBe(true);
+  // Loop through each card
+  cardTitles.forEach((title, index) => {
+    // Get card by title
+    const titleElement = screen.getByText(title);
+    const cardDiv = titleElement.closest(".features_card");
+
+    // Click the card
+    fireEvent.click(cardDiv);
+
+    // That card must expand
+    expect(cardDiv.classList.contains("expanded")).toBe(true);
+
+    // Other cards must collapse or become hidden
+    const allCards = container.querySelectorAll(".features_card");
+    allCards.forEach((otherCard, idx) => {
+      if (idx !== index) {
+        expect(otherCard.classList.contains("hidden")).toBe(true);
+      }
+    });
+
+    // After each check, reset expandedCard by clicking again ("See less")
+    const seeLessBtn = container.querySelector(".see_less button");
+    if (seeLessBtn) {
+      fireEvent.click(seeLessBtn);
+    }
+  });
 });
 
-test("collapses expanded card when clicking See less", () => {
-  render(<Home />);
 
-  const cardTitle = screen.getByText("Dynamic Portfolio Tools");
-  const cardDiv = cardTitle.closest(".features_card");
 
-  // Expand card
-  fireEvent.click(cardDiv);
-
-  // Click "See less"
-  const seeLess = screen.getByText("See less");
-  fireEvent.click(seeLess);
-
-  expect(cardDiv.classList.contains("expanded")).toBe(false);
-});
 
 test("does not expand feature card on mobile view", () => {
   window.innerWidth = 500;
@@ -168,6 +194,7 @@ test("does not expand feature card on mobile view", () => {
 
   expect(cardDiv.classList.contains("expanded")).toBe(false);
 });
+
 
 
 });

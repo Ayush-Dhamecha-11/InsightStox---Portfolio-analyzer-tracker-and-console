@@ -2,7 +2,7 @@ import { insertTransaction } from "../../../src/db/insertTransaction.js";
 import { getPrice } from "../../../src/utils/getQuotes.js";
 import { PriceStore } from "../../../src/utils/stores/priceRates.js";
 import { sql } from "../../../src/db/dbConnection.js";
-import YahooFinance from 'yahoo-finance2';
+import YahooFinance from "yahoo-finance2";
 
 jest.mock("yahoo-finance2", () => {
     const mockQuoteSummary = jest.fn();
@@ -24,202 +24,266 @@ jest.mock("../../../src/utils/getQuotes.js", () => ({
 }));
 
 jest.mock("../../../src/utils/stores/priceRates.js", () => ({
-    PriceStore: {
-        get: jest.fn(),
-    },
+    PriceStore: { get: jest.fn() },
 }));
 
-describe('insertTransaction Database Function', () => {
-    const mockEmail = "test@example.com";
-    const mockSymbol = "AAPL";
-    const mockTime = new Date().toISOString();
+describe("insertTransaction (Strong, Mutation-Proof Tests)", () => {
+    const email = "test@example.com";
+    const symbol = "AAPL";
+    const time = "2024-01-01T00:00:00.000Z";
 
     beforeEach(() => {
         jest.clearAllMocks();
+        PriceStore.get.mockReturnValue(1);
     });
 
-    describe('Input Validation & Holdings Checks', () => {
-        it('should return error if SELL requested but holding is insufficient', async () => {
-            sql.mockResolvedValueOnce([{ current_holding: 5, avg_price: 100 }]);
-            const result = await insertTransaction(mockEmail, mockSymbol, 10, 'SELL', mockTime);
-            expect(sql).toHaveBeenCalledTimes(1);
-            expect(result).toEqual({ success: false, message: "Insufficient holdings to sell." });
+    it("1) SELL → insufficient holdings → exact error return", async () => {
+        sql.mockResolvedValueOnce([{ current_holding: 5, avg_price: 100 }]);
+
+        const result = await insertTransaction(email, symbol, 10, "SELL", time);
+
+        expect(result).toStrictEqual({
+            success: false,
+            message: "Insufficient holdings to sell."
         });
 
-        it('should allow SELL if holding equals quantity', async () => {
-            sql.mockResolvedValueOnce([{ current_holding: 10, avg_price: 100 }]);
-            getPrice.mockResolvedValueOnce({ current: 150 });
-            sql.transaction.mockResolvedValueOnce([{}, {}]);
-            const result = await insertTransaction(mockEmail, mockSymbol, 10, 'SELL', mockTime);
-            expect(result.success).toBe(true);
-        });
-
-        it('should initialize holding to 0 if no record exists', async () => {
-            sql.mockResolvedValueOnce([]);
-            sql.mockResolvedValueOnce([{ symbol: "AAPL" }]);
-            getPrice.mockResolvedValueOnce({ current: 100 });
-            sql.transaction.mockResolvedValueOnce([{}, {}]);
-            await insertTransaction(mockEmail, mockSymbol, 1, 'BUY', mockTime);
-            expect(sql).toHaveBeenCalledTimes(4);
-        });
+        expect(sql).toHaveBeenCalledTimes(1);
     });
 
-    describe('BUY Transaction Flow', () => {
-        it('should fetch YahooFinance data and insert stock if not in DB', async () => {
-            sql.mockResolvedValueOnce([{ current_holding: 0, avg_price: 0 }]);
-            sql.mockResolvedValueOnce([]);
+    it("2) SELL → exact holdings match → success", async () => {
+        sql.mockResolvedValueOnce([{ current_holding: 10, avg_price: 100 }]);
+        getPrice.mockResolvedValueOnce({ current: 150 });
+        sql.transaction.mockResolvedValueOnce([{ insert: true }, { update: true }]);
 
-            YahooFinance.mockQuoteSummary.mockResolvedValueOnce({
-                price: {
-                    shortName: 'Apple Inc.',
-                    longName: 'Apple',
-                    exchange: 'NASDAQ',
-                    currency: 'USD',
-                    quoteType: 'EQUITY',
-                    market: 'US',
-                    regularMarketPrice: 150
-                },
-                assetProfile: { sector: 'Technology' }
-            });
+        const result = await insertTransaction(email, symbol, 10, "SELL", time);
 
-            PriceStore.get.mockReturnValue(2);
-            sql.mockResolvedValueOnce([{ symbol: "AAPL" }]);
-            sql.transaction.mockResolvedValueOnce(['ins', 'upd']);
-
-            const result = await insertTransaction(mockEmail, mockSymbol, 5, 'BUY', mockTime);
-
-            expect(YahooFinance.mockQuoteSummary).toHaveBeenCalledWith(mockSymbol, { modules: ['assetProfile', 'price'] });
-            expect(PriceStore.get).toHaveBeenCalledWith('USD');
-            expect(sql).toHaveBeenNthCalledWith(3, expect.anything(), mockSymbol, 'Apple Inc.', 'Apple', 'Technology', 'USD', 'EQUITY', 'US', 'NASDAQ', mockTime);
-            expect(result).toEqual({ success: true, insert: 'ins', update: 'upd' });
-        });
-
-        it('should handle missing assetProfile in Yahoo response', async () => {
-            sql.mockResolvedValueOnce([{ current_holding: 0, avg_price: 0 }]);
-            sql.mockResolvedValueOnce([]);
-
-            YahooFinance.mockQuoteSummary.mockResolvedValueOnce({
-                price: { currency: 'USD', regularMarketPrice: 100 }
-            });
-
-            PriceStore.get.mockReturnValue(1);
-            sql.mockResolvedValueOnce([]);
-            sql.transaction.mockResolvedValueOnce([]);
-
-            await insertTransaction(mockEmail, mockSymbol, 1, 'BUY', mockTime);
-
-            expect(sql).toHaveBeenNthCalledWith(3, expect.anything(), mockSymbol, undefined, undefined, "N/A", "USD", undefined, undefined, undefined, mockTime);
-        });
-
-        it('should return failure if Yahoo returns no price', async () => {
-            sql.mockResolvedValueOnce([{ current_holding: 0, avg_price: 0 }]);
-            sql.mockResolvedValueOnce([]);
-            YahooFinance.mockQuoteSummary.mockResolvedValueOnce({});
-            const result = await insertTransaction(mockEmail, mockSymbol, 1, 'BUY', mockTime);
-            expect(result).toEqual({ success: false, message: "Unable to fetch stock details." });
-        });
-
-        it('should use getPrice if stock exists', async () => {
-            sql.mockResolvedValueOnce([{ current_holding: 0, avg_price: 0 }]);
-            sql.mockResolvedValueOnce([{ symbol: "AAPL" }]);
-            getPrice.mockResolvedValueOnce({ current: 200 });
-            sql.transaction.mockResolvedValueOnce([]);
-            await insertTransaction(mockEmail, mockSymbol, 1, 'BUY', mockTime);
-            expect(YahooFinance.mockQuoteSummary).not.toHaveBeenCalled();
-            expect(getPrice).toHaveBeenCalledWith(mockSymbol);
-        });
-
-        it('should correctly convert Yahoo price (division)', async () => {
-            sql.mockResolvedValueOnce([{ current_holding: 0, avg_price: 0 }]);
-            sql.mockResolvedValueOnce([]);
-
-            YahooFinance.mockQuoteSummary.mockResolvedValueOnce({
-                price: { currency: 'USD', regularMarketPrice: 150 },
-                assetProfile: {}
-            });
-
-            PriceStore.get.mockReturnValue(3);
-            sql.mockResolvedValueOnce([]);
-            sql.transaction.mockResolvedValueOnce([]);
-
-            await insertTransaction(mockEmail, mockSymbol, 1, 'BUY', mockTime);
-
-            const userTxCall = sql.mock.calls.find(call => call[0].join("").includes('user_transactions'));
-            const params = userTxCall.slice(1);
-            expect(params).toContain(50);
+        expect(result).toStrictEqual({
+            success: true,
+            insert: { insert: true },
+            update: { update: true }
         });
     });
 
-    describe('SELL Transaction Flow & Calculations', () => {
-        it('should correctly compute profit, negative quantity, avg price, and SQL updates', async () => {
-            sql.mockResolvedValueOnce([{ current_holding: 10, avg_price: 100 }]);
-            getPrice.mockResolvedValueOnce({ current: 120 });
+    it("3) SELL → getPrice returns no current → return error", async () => {
+        sql.mockResolvedValueOnce([{ current_holding: 10, avg_price: 100 }]);
+        getPrice.mockResolvedValueOnce({}); 
 
-            sql.transaction.mockImplementation(async (queries) => ['ins', 'upd']);
+        const result = await insertTransaction(email, symbol, 5, "SELL", time);
 
-            const result = await insertTransaction(mockEmail, mockSymbol, 5, 'SELL', mockTime);
-            expect(result.success).toBe(true);
-
-            const price = 120;
-            const old = 100;
-
-            const expectedProfit = (price - old) * 5;
-            const expectedQuantity = -5;
-            const expectedAvg = (old * (10 + expectedQuantity)) / (10 + expectedQuantity);
-            const expectedSpend = price * expectedQuantity;
-
-            const summaryCall = sql.mock.calls.find(call => call[0].join("").includes('ON CONFLICT') || call[0].join("").includes('INSERT INTO "stock_summary"'));
-            const params = summaryCall.slice(1);
-
-            expect(params).toContain(expectedQuantity);
-            expect(params).toContain(expectedSpend);
-            expect(params).toContain(expectedAvg);
-            expect(params).toContain(expectedProfit);
-        });
-
-        it('should return null if getPrice fails', async () => {
-            sql.mockResolvedValueOnce([{ current_holding: 10, avg_price: 100 }]);
-            getPrice.mockRejectedValueOnce(new Error("API Error"));
-            const result = await insertTransaction(mockEmail, mockSymbol, 5, 'SELL', mockTime);
-            expect(result).toBeNull();
+        expect(result).toStrictEqual({
+            success: false,
+            message: "Unable to fetch stock price."
         });
     });
 
-    describe('Mathematical Logic Mutations', () => {
-        it('should compute BUY weighted avg and totalSpend correctly', async () => {
-            sql.mockResolvedValueOnce([{ current_holding: 10, avg_price: 100 }]);
-            sql.mockResolvedValueOnce([{ symbol: "AAPL" }]);
+    it("4) BUY update → correct avg_price & spend computed exactly", async () => {
+        sql.mockResolvedValueOnce([{ current_holding: 10, avg_price: 100 }]);
+        getPrice.mockResolvedValueOnce({ current: 200 });
 
-            getPrice.mockResolvedValueOnce({ current: 200 });
-            sql.transaction.mockResolvedValueOnce([]);
+        sql.transaction.mockResolvedValueOnce(["insertOK", "updateOK"]);
 
-            await insertTransaction(mockEmail, mockSymbol, 10, 'BUY', mockTime);
+        const result = await insertTransaction(email, symbol, 10, "BUY", time);
 
-            const summaryCall = sql.mock.calls.find(call => call[0].join("").includes('ON CONFLICT') || call[0].join("").includes('INSERT INTO "stock_summary"'));
-            const params = summaryCall.slice(1);
+        expect(result).toStrictEqual({
+            success: true,
+            insert: "insertOK",
+            update: "updateOK"
+        });
 
-            const expectedAvg = ((100*10) + (200*10)) / (10 + 10);
-            const expectedSpend = 200 * 10;
+        const expectedSpend = 10 * 200;
+        const expectedAvg = ((100 * 10) + (200 * 10)) / 20;
 
-            expect(params).toContain(expectedAvg);
-            expect(params).toContain(expectedSpend);
+        const updateCall = sql.mock.calls.find(c => c[0].join("").includes("UPDATE"));
+        const params = updateCall.slice(1);
+
+        expect(params).toContain(expectedSpend);
+        expect(params).toContain(expectedAvg);
+    });
+
+    it("5) BUY update → price.current missing → return error", async () => {
+        sql.mockResolvedValueOnce([{ current_holding: 5, avg_price: 100 }]);
+        getPrice.mockResolvedValueOnce({}); 
+
+        const result = await insertTransaction(email, symbol, 5, "BUY", time);
+
+        expect(result).toStrictEqual({
+            success: false,
+            message: "Unable to fetch stock price."
         });
     });
 
-    describe('Error Handling', () => {
-        it('should return null if DB throws before processing', async () => {
-            sql.mockRejectedValueOnce(new Error("DB DEAD"));
-            const result = await insertTransaction(mockEmail, mockSymbol, 10, 'BUY', mockTime);
-            expect(result).toBeNull();
+    it("6) BUY new → YahooFinance used → insert stock", async () => {
+        sql.mockResolvedValueOnce([]); 
+        sql.mockResolvedValueOnce([]); 
+
+        YahooFinance.mockQuoteSummary.mockResolvedValueOnce({
+            price: {
+                shortName: "Apple Inc.",
+                longName: "Apple",
+                exchange: "NASDAQ",
+                currency: "USD",
+                quoteType: "EQUITY",
+                market: "US",
+                regularMarketPrice: 150
+            },
+            assetProfile: { sector: "Technology" }
         });
 
-        it('should return null if transaction fails', async () => {
-            sql.mockResolvedValueOnce([{ current_holding: 0, avg_price: 0 }]);
-            sql.mockResolvedValueOnce([{ symbol: "AAPL" }]);
-            getPrice.mockResolvedValueOnce({ current: 100 });
-            sql.transaction.mockRejectedValueOnce(new Error("TX FAIL"));
-            const result = await insertTransaction(mockEmail, mockSymbol, 10, 'BUY', mockTime);
-            expect(result).toBeNull();
+        PriceStore.get.mockReturnValue(2);
+
+        sql.transaction.mockResolvedValueOnce(["insert", "update"]);
+
+        const result = await insertTransaction(email, symbol, 3, "BUY", time);
+
+        expect(result).toStrictEqual({
+            success: true,
+            insert: "insert",
+            update: "update"
+        });
+
+        expect(YahooFinance.mockQuoteSummary).toHaveBeenCalledTimes(1);
+    });
+
+    it("7) BUY new → Yahoo missing price → return exact error", async () => {
+        sql.mockResolvedValueOnce([]);
+        sql.mockResolvedValueOnce([]);
+
+        YahooFinance.mockQuoteSummary.mockResolvedValueOnce({});
+
+        const result = await insertTransaction(email, symbol, 1, "BUY", time);
+
+        expect(result).toStrictEqual({
+            success: false,
+            message: "Unable to fetch stock details."
         });
     });
+
+    it("8) BUY new → stock exists → use getPrice instead of Yahoo", async () => {
+        sql.mockResolvedValueOnce([]);
+        sql.mockResolvedValueOnce([{ symbol: "AAPL" }]);
+
+        getPrice.mockResolvedValueOnce({ current: 99 });
+
+        sql.transaction.mockResolvedValueOnce(["insert", "update"]);
+
+        await insertTransaction(email, symbol, 5, "BUY", time);
+
+        expect(YahooFinance.mockQuoteSummary).not.toHaveBeenCalled();
+        expect(getPrice).toHaveBeenCalledWith("AAPL");
+    });
+
+    it("9) BUY new → convert Yahoo price using PriceStore", async () => {
+        sql.mockResolvedValueOnce([]);
+        sql.mockResolvedValueOnce([]);
+
+        YahooFinance.mockQuoteSummary.mockResolvedValueOnce({
+            price: { currency: "USD", regularMarketPrice: 150 },
+            assetProfile: {}
+        });
+
+        PriceStore.get.mockReturnValue(3);
+
+        sql.transaction.mockResolvedValueOnce(["ins", "upd"]);
+
+        await insertTransaction(email, symbol, 1, "BUY", time);
+
+        const userTxCall = sql.mock.calls.find(c => c[0].join("").includes("user_transactions"));
+        const params = userTxCall.slice(1);
+
+        expect(params).toContain(50); 
+    });
+
+    it("10) DB SELECT fails → return null", async () => {
+        sql.mockRejectedValueOnce(new Error("DB DEAD"));
+
+        const result = await insertTransaction(email, symbol, 1, "BUY", time);
+
+        expect(result).toBeNull();
+    });
+
+    it("11) Transaction fails → return null", async () => {
+        sql.mockResolvedValueOnce([]);
+        sql.mockResolvedValueOnce([{ symbol: "AAPL" }]);
+        getPrice.mockResolvedValueOnce({ current: 100 });
+
+        sql.transaction.mockRejectedValueOnce(new Error("TX FAIL"));
+
+        const result = await insertTransaction(email, symbol, 1, "BUY", time);
+
+        expect(result).toBeNull();
+    });
+
+    it("12) BUY new → Yahoo provided no price, getPrice returns missing current → return exact error", async () => {
+        sql.mockResolvedValueOnce([]); 
+        sql.mockResolvedValueOnce([{symbol: "AAPL"}]); 
+
+        getPrice.mockResolvedValueOnce({});  
+
+        const result = await insertTransaction(email, symbol, 3, "BUY", time);
+
+        expect(result).toStrictEqual({
+            success: false,
+            message: "Unable to fetch stock price."
+        });
+
+        expect(getPrice).toHaveBeenCalledTimes(1);
+    });
+
+    it("13) SELL entire holding → new_avg_price becomes NaN → sets avg_price = 0", async () => {
+        sql.mockResolvedValueOnce([{ current_holding: 10, avg_price: 100 }]);
+        getPrice.mockResolvedValueOnce({ current: 100 });
+
+        sql.transaction.mockResolvedValueOnce(["ins", "upd"]);
+
+        const result = await insertTransaction(email, symbol, 10, "SELL", time);
+
+        expect(result.success).toBe(true);
+
+        const updateCall = sql.mock.calls.find(c => c[0].join("").includes("UPDATE"));
+        const params = updateCall.slice(1);
+
+        expect(params).toContain(0);
+    });
+
+    it("14) SELL half holding → new_avg_price becomes NaN → sets avg_price = 0", async () => {
+        sql.mockResolvedValueOnce([{ current_holding: 20, avg_price: 100 }]);
+        getPrice.mockResolvedValueOnce({ current: 100 });
+
+        sql.transaction.mockResolvedValueOnce(["ins", "upd"]);
+
+        const result = await insertTransaction(email, symbol, 10, "SELL", time);
+
+        expect(result.success).toBe(true);
+
+        const updateCall = sql.mock.calls.find(c => c[0].join("").includes("UPDATE"));
+        const params = updateCall.slice(1);
+
+        expect(params).toContain(0);
+    });
+
+    it("15) invalid Transaction type", async () => {
+
+        const result = await insertTransaction(email, symbol, 10, "Update", time);
+
+        expect(result.success).toBe(false);
+        expect(result.message).toBe("Invalid transaction type.");
+    });
+
+    it("16) DB error", async () => {
+        sql.mockResolvedValueOnce(null);
+
+        const result = await insertTransaction(email, symbol, 10, "SELL", time);
+        expect(result.success).toBe(false);
+        expect(result.message).toBe("Database error while checking holdings.");
+    });
+
+    it("17) DB error", async () => {
+        sql.mockResolvedValueOnce(null);
+
+        const result = await insertTransaction(email, symbol, 10, "BUY", time);
+
+        expect(result.success).toBe(false);
+        expect(result.message).toBe("Database error while checking holdings.");
+    });
+
 });

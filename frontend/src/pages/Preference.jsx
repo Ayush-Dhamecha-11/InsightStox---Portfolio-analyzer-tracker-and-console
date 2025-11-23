@@ -5,7 +5,11 @@ import { Sidebar } from "../components/Sidebar.jsx";
 import Footer from "../components/Footer.jsx";
 import "./Preference.css";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { useAppContext } from "../context/AppContext.jsx";
+import { useNavigate } from "react-router-dom";
+
 axios.defaults.withCredentials = true;
+
 
 
 export const Preference = () => {
@@ -17,6 +21,27 @@ export const Preference = () => {
   const [initialLayout, setInitialLayout] = useState(null);
   const firstRun = useRef(true);
   //  Backend fetch logic (GET)
+  const navigate = useNavigate();
+    const { ensureAuth } = useAppContext();
+  
+    useEffect(() => {
+               // Run an initial check: this page is an auth/home page, so pass true
+            (async () => {
+              try {
+                await ensureAuth(navigate, false);
+              } catch (e) {
+                console.error("ensureAuth initial check failed:", e);
+              }
+            })();
+      
+            const intervalId = setInterval(() => {
+              ensureAuth(navigate, false).catch((e) => console.error(e));
+            }, 10000);
+      
+            return () => {
+              clearInterval(intervalId);
+            };
+      },  [navigate, ensureAuth]);
   useEffect(() => {
     
     async function fetchPreferences() {

@@ -24,6 +24,7 @@ const  Watchlist= () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
+
   // Filter states
   const fetchWatchlist = async () => {
     try {
@@ -89,6 +90,27 @@ const  Watchlist= () => {
     marketCap: [],
     sortBy: ''
   });
+
+  const { ensureAuth } = useAppContext();
+
+  useEffect(() => {
+             // Run an initial check: this page is an auth/home page, so pass true
+          (async () => {
+            try {
+              await ensureAuth(navigate, false);
+            } catch (e) {
+              console.error("ensureAuth initial check failed:", e);
+            }
+          })();
+    
+          const intervalId = setInterval(() => {
+            ensureAuth(navigate, false).catch((e) => console.error(e));
+          }, 10000);
+    
+          return () => {
+            clearInterval(intervalId);
+          };
+    },  [navigate, ensureAuth]);
 
   useEffect(() => {
     fetchWatchlist();

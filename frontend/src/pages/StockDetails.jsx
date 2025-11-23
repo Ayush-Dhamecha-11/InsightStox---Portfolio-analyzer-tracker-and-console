@@ -51,6 +51,73 @@ export const StockDetails = () => {
 
     console.log(symbol);
 
+    const roundTo = (num, decimals = 2) => {
+        if (num === null || num === undefined || isNaN(Number(num))) return "--";
+        return Number.parseFloat(num).toFixed(decimals);
+    };
+
+    const formatPercentage = (num, decimals = 2) => {
+        if (num === null || num === undefined || isNaN(Number(num))) return "--";
+        const val = Number(num);
+        const percent = Math.abs(val) < 1 ? val * 100 : val;
+        return percent.toFixed(decimals);
+    };
+
+    const formatLargeNumber = (num) => {
+        if (num === null || num === undefined || isNaN(Number(num))) return "--";
+
+        const val = Number(num);
+        const absNum = Math.abs(val);
+        if (absNum >= 1e12) return (val / 1e12).toFixed(2) + "T";
+        if (absNum >= 1e9) return (val / 1e9).toFixed(2) + "B";
+        if (absNum >= 1e6) return (val / 1e6).toFixed(2) + "M";
+        if (absNum >= 1e3) return (val / 1e3).toFixed(2) + "K";
+        return val.toFixed(2);
+    };
+
+    const formatSmallNumber = (num) => {
+        if (num === null || num === undefined || isNaN(Number(num))) return "--";
+        const val = Number.parseFloat(num);
+        if (Math.abs(val) < 1e-3) return "0.00";
+        return val.toFixed(2);
+    };
+
+    const formatDate = (isoString) => {
+        if (!isoString) return "--";
+        try {
+            const date = new Date(isoString);
+            return date.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+            });
+        } catch {
+            return "--";
+        }
+    };
+
+    const navigate = useNavigate();
+  const { ensureAuth } = useAppContext();
+
+  useEffect(() => {
+             // Run an initial check: this page is an auth/home page, so pass true
+          (async () => {
+            try {
+              await ensureAuth(navigate, false);
+            } catch (e) {
+              console.error("ensureAuth initial check failed:", e);
+            }
+          })();
+    
+          const intervalId = setInterval(() => {
+            ensureAuth(navigate, false).catch((e) => console.error(e));
+          }, 10000);
+    
+          return () => {
+            clearInterval(intervalId);
+          };
+    },  [navigate, ensureAuth]);
+
     useEffect(() => {
         const getStockDetails = async () => {
             try {

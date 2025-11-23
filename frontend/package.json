@@ -29,7 +29,8 @@
     "react-router-dom": "^7.9.1",
     "react-spinners": "^0.17.0",
     "remark-emoji": "^5.0.2",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "sweetalert2": "^11.26.3"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.5",

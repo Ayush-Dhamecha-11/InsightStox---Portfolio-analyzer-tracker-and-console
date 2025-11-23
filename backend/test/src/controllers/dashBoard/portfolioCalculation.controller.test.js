@@ -17,7 +17,7 @@ jest.mock("../../../../src/db/dbConnection.js", () => ({
 import { calculatePortfolio } from "../../../../src/controllers/dashBoard/portfolioCalculation.controller.js";
 import { getStockSummary } from "../../../../src/db/stockSummary.js";
 import { getPrice } from "../../../../src/utils/getQuotes.js";
-import { stockPriceStore } from "../../../../src/utils/stockPriceStore.js";
+import { UserPortfolioValuationdaily } from "../../../../src/mongoModels/userPortfolioValuation.model.js";
 jest.mock("../../../../src/db/stockSummary.js");
 jest.mock("../../../../src/utils/getQuotes.js");
 
