@@ -110,7 +110,7 @@ export default function PortfolioChart() {
               let label = context.dataset.label || "";
               if (label) label += ": ";
               if (context.parsed.y !== null)
-                label += `$${context.parsed.y.toLocaleString()}`;
+                label += `₹${context.parsed.y.toLocaleString()}`;
               return label;
             },
           },
