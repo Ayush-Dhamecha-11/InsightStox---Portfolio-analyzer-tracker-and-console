@@ -10,8 +10,6 @@ import { AiOutlineSetting } from "react-icons/ai";
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.jsx';
 import './HelpSupport.css';
-import { useNavigate } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext.jsx';
 axios.defaults.withCredentials = true;
 
 // --- Data for detailed help topics ---
