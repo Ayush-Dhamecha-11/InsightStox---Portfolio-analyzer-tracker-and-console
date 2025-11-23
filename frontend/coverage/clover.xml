@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< Updated upstream
 <coverage generated="1763571334750" clover="3.2.0">
   <project timestamp="1763571334750" name="All files">
     <metrics statements="81" coveredstatements="64" conditionals="46" coveredconditionals="29" methods="25" coveredmethods="18" elements="152" coveredelements="111" complexity="0" loc="81" ncloc="81" packages="1" files="1" classes="1"/>
@@ -85,6 +86,46 @@
       <line num="260" count="11" type="stmt"/>
       <line num="270" count="33" type="stmt"/>
       <line num="272" count="3" type="stmt"/>
+=======
+<coverage generated="1763840329971" clover="3.2.0">
+  <project timestamp="1763840329971" name="All files">
+    <metrics statements="30" coveredstatements="30" conditionals="4" coveredconditionals="4" methods="12" coveredmethods="11" elements="46" coveredelements="45" complexity="0" loc="30" ncloc="30" packages="1" files="2" classes="2"/>
+    <file name="auth.css" path="C:\Users\mg932\Desktop\GIt insight stox\InsightStox---Portfolio-analyzer-tracker-and-console\frontend\src\pages\auth.css">
+      <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+    </file>
+    <file name="auth.jsx" path="C:\Users\mg932\Desktop\GIt insight stox\InsightStox---Portfolio-analyzer-tracker-and-console\frontend\src\pages\auth.jsx">
+      <metrics statements="30" coveredstatements="30" conditionals="4" coveredconditionals="4" methods="12" coveredmethods="11"/>
+      <line num="11" count="3" type="stmt"/>
+      <line num="13" count="8" type="stmt"/>
+      <line num="14" count="6" type="cond" truecount="2" falsecount="0"/>
+      <line num="18" count="8" type="stmt"/>
+      <line num="19" count="2" type="stmt"/>
+      <line num="20" count="2" type="stmt"/>
+      <line num="23" count="8" type="stmt"/>
+      <line num="24" count="1" type="stmt"/>
+      <line num="25" count="1" type="stmt"/>
+      <line num="26" count="1" type="stmt"/>
+      <line num="27" count="1" type="stmt"/>
+      <line num="30" count="8" type="stmt"/>
+      <line num="31" count="8" type="stmt"/>
+      <line num="33" count="8" type="stmt"/>
+      <line num="35" count="8" type="stmt"/>
+      <line num="36" count="8" type="stmt"/>
+      <line num="37" count="8" type="stmt"/>
+      <line num="39" count="1" type="stmt"/>
+      <line num="44" count="8" type="stmt"/>
+      <line num="46" count="2" type="stmt"/>
+      <line num="51" count="8" type="stmt"/>
+      <line num="52" count="1" type="stmt"/>
+      <line num="53" count="1" type="stmt"/>
+      <line num="54" count="1" type="stmt"/>
+      <line num="56" count="8" type="stmt"/>
+      <line num="57" count="8" type="stmt"/>
+      <line num="58" count="8" type="stmt"/>
+      <line num="59" count="8" type="stmt"/>
+      <line num="63" count="8" type="stmt"/>
+      <line num="68" count="1" type="stmt"/>
+>>>>>>> Stashed changes
     </file>
   </project>
 </coverage>

@@ -28,7 +28,7 @@ const LoginForm = ({ toggleForm, resetFormStates: parentResetFormStates }) => {
     const [forgotUserExists, setForgotUserExists] = useState(false);
     const [forgotOtpvarified, setForgotOtpvarified] = useState(false);
     const [newPassword, setNewPassword] = useState("");
-    const [newPasswordError, setNewPasswordError] = useState(false);
+    const [newPasswordError, setNewPasswordError] = useState("");
     const [resetPassword, setResetPassword] = useState(false);
     const [googleLoginLoading, setGoogleLoginLoading] = useState(false);
     axios.defaults.withCredentials = true;
@@ -74,7 +74,7 @@ const LoginForm = ({ toggleForm, resetFormStates: parentResetFormStates }) => {
         }catch(err){  
           console.log("Google login error:", err.response.data.message);
           if(err.response.data.message)
-            setTitleError("User already exists with this email. Please login");
+            setTitleError(err.response.data.message);
         }finally {
           setGoogleLoginLoading(false);
         }
@@ -270,7 +270,7 @@ return (
             {isOtpSubmitted && forgotUserExists && !forgotOtpvarified && (<button type="button" className="resubmit" disabled = {timer!==0} style = {{opacity: timer===0 ? 1 : 0.5, cursor: timer===0 ? 'pointer' : 'not-allowed',display: "block"}} onClick={() => { setTitleError("");handleSendOtpForForgotPassword();}}>Resend</button>)}
 
             {/* Reset Password Button */}
-            {forgotOtpvarified && (<button type="button" className="resubmit resetpass loading" disabled = {newPasswordError!==""} style={{display: "flex",opacity: newPasswordError!=="" ? 0.5 : 1,cursor: newPasswordError!=="" ? 'not-allowed' : 'pointer'}} onClick={() => {handleResetPassword();}}>{isLoading ?<><i className="pi pi-spin pi-spinner spin"></i><span>Processing...</span></> : "Reset Password"}</button>)}
+            {forgotOtpvarified && (<button type="button" className="resubmit resetpass loading" disabled = {newPasswordError!=="" || newPassword.length===0 } style={{display: "flex",opacity: newPasswordError!=="" || newPassword.length===0 ? 0.5 : 1,cursor: newPasswordError!=="" || newPassword.length===0 ? 'not-allowed' : 'pointer'}} onClick={() => {handleResetPassword();}}>{isLoading ?<><i className="pi pi-spin pi-spinner spin"></i><span>Processing...</span></> : "Reset Password"}</button>)}
 
             {/* Google Login Button */}
             {!isForgotPassword && (<button type="button" className="google-btn loading" onClick = {()=>{handleGoogleButtonClick();}} style={{display: "flex"}} >

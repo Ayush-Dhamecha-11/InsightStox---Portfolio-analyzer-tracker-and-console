@@ -10,6 +10,7 @@ import { PortfolioSummary } from "../components/PortfolioSummary";
 import { PortfolioHoldings } from "../components/PortfolioHoldings";
 import { PortfolioFundamentals } from "../components/PortfolioFundamentals";
 import './Portfolio.css';
+import { useNavigate } from "react-router-dom";
 export const Portfolio = () => {
     const BASE_URL = import.meta.env.VITE_BACKEND_LINK;
     axios.defaults.withCredentials = true;
@@ -26,6 +27,28 @@ export const Portfolio = () => {
     const handleMode = (mode) => {
         setSelectedMode(mode);
     }
+
+    const navigate = useNavigate();
+      const { ensureAuth } = useAppContext();
+    
+      useEffect(() => {
+                 // Run an initial check: this page is an auth/home page, so pass true
+              (async () => {
+                try {
+                  await ensureAuth(navigate, false);
+                } catch (e) {
+                  console.error("ensureAuth initial check failed:", e);
+                }
+              })();
+        
+              const intervalId = setInterval(() => {
+                ensureAuth(navigate, false).catch((e) => console.error(e));
+              }, 10000);
+        
+              return () => {
+                clearInterval(intervalId);
+              };
+        },  [navigate, ensureAuth]);
 
     useEffect(() => {
         const getUserPortfolio = async () => {

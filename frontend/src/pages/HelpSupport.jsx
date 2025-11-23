@@ -9,6 +9,8 @@ import { HiOutlineBookOpen } from "react-icons/hi";
 import { BsBarChartLineFill } from "react-icons/bs";
 import { AiOutlineSetting } from "react-icons/ai";
 import './HelpSupport.css';
+import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext.jsx';
 axios.defaults.withCredentials = true;
 
 // --- Data for our detailed help topics (with your icons) ---
@@ -234,6 +236,27 @@ const handleFeedbackSubmit = async (event) => {
 export const HelpSupport = () => {
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [darkMode, setDarkMode] = useState(true); 
+  const navigate = useNavigate();
+  const { ensureAuth } = useAppContext();
+
+  useEffect(() => {
+             // Run an initial check: this page is an auth/home page, so pass true
+          (async () => {
+            try {
+              await ensureAuth(navigate, false);
+            } catch (e) {
+              console.error("ensureAuth initial check failed:", e);
+            }
+          })();
+    
+          const intervalId = setInterval(() => {
+            ensureAuth(navigate, false).catch((e) => console.error(e));
+          }, 10000);
+    
+          return () => {
+            clearInterval(intervalId);
+          };
+    },  [navigate, ensureAuth]);
   return (
     <div className="HelpSupportLayout">
        <Navbar darkMode={darkMode} setDarkMode={setDarkMode} pageType="help-support"

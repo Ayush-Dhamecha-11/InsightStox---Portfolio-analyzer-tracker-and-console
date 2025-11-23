@@ -222,10 +222,6 @@ test("navigates to My Profile when clicked inside profile popup", async () => {
 });
 
 
-test("navigates to My Profile when clicked inside profile popup", async () => {
-  
-});
-
 test("route links inside profile popup trigger correct navigation paths", () => {
   const profileData = { name: "John", email: "john@example.com" };
 
