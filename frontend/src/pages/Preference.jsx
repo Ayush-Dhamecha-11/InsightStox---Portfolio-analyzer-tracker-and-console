@@ -13,16 +13,16 @@ axios.defaults.withCredentials = true;
 
 
 export const Preference = () => {
-  const [darkMode, setDarkMode] = useState(true);
+  const { darkMode, setDarkMode, userDetails: userInfo, ensureAuth } = useAppContext();  
   const [theme, setTheme] = useState("dark");
   const [layout, setLayout] = useState("simple");
   const [loading, setLoading] = useState(true);
   const [initialTheme, setInitialTheme] = useState(null);
   const [initialLayout, setInitialLayout] = useState(null);
   const firstRun = useRef(true);
+
   //  Backend fetch logic (GET)
   const navigate = useNavigate();
-    const { ensureAuth } = useAppContext();
   
     useEffect(() => {
                // Run an initial check: this page is an auth/home page, so pass true
@@ -129,7 +129,6 @@ export const Preference = () => {
   }, [theme, layout]);
 
 
-
   return (
     <div className="PreferenceLayout">
       {/* --- Navbar --- */}
@@ -137,13 +136,13 @@ export const Preference = () => {
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         pageType="preferences"
-        profileData={{ name: "Ayush Dhamecha", email: "ma**@gmail.com" }}
+        profileData= {{ name: userInfo?.name, email: userInfo?.email, profileImage: userInfo?.profileImage }}
       />
 
       <div className="PreferenceBody">
         {/* --- Sidebar --- */}
         <Sidebar
-          primaryData={{ name: "Ayush Dhamecha", email: "ma**@gmail.com" }}
+          primaryData= {{ name: userInfo?.name, email: userInfo?.email, profileImage: userInfo?.profileImage }}
         />
 
         {/* --- Main Content --- */}
