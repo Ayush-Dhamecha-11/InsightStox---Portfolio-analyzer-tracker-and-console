@@ -11,6 +11,7 @@ import './StockDetails.css';
 import { useParams } from "react-router-dom";
 import { useAppContext } from "../context/AppContext.jsx";
 import { formatDate, formatLargeNumber, formatPercentage, formatSmallNumber, roundTo } from "../utils/dataCleaningFuncs.jsx";
+import { useNavigate } from "react-router-dom";
 
 export const StockDetails = () => {
     const BASE_URL = import.meta.env.VITE_BACKEND_LINK;
