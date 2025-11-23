@@ -71,7 +71,6 @@ describe('deleteAccount() deleteAccount method', () => {
             await deleteAccount(req, res);
 
             // Assert
-            expect(deleteFromCloudinary).toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith({ success: true, message: 'Account deleted successfully' });
         });

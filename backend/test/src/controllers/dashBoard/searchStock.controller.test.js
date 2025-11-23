@@ -31,6 +31,7 @@ describe("searchStock() controller", () => {
 
     fuseInstance.search.mockReset();
     yahooFinanceInstance.search.mockReset();
+    
   });
 
   describe("Happy paths", () => {
