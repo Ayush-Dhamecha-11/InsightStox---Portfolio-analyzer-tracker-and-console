@@ -228,6 +228,42 @@ useEffect(() => {
       return () => clearInterval(interval);
     }, [timer]);
 /*----------------------------------- JSX --------------------------------------------------------------------- */
+// Handle Enter key: submit only when fields are valid for the current flow
+const handleKeyDown = (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+
+    if (isForgotPassword) {
+      // If not yet requested OTP -> send OTP (requires valid email)
+      if (!isOtpSubmitted) {
+        if (email.trim() === "" || emailError) return;
+        setTitleError("");
+        handleForgotPasswordInputToggle(email);
+        handleSendOtpForForgotPassword();
+        return;
+      }
+
+      // OTP submitted and user exists -> verify OTP (requires OTP)
+      if (isOtpSubmitted && forgotUserExists && !forgotOtpvarified) {
+        if (otp.trim() === "") return;
+        setTitleError("");
+        handleOtpverificationForForgotPassword();
+        return;
+      }
+
+      // If OTP verified -> reset password (requires new password valid)
+      if (forgotOtpvarified) {
+        if (newPasswordError !== "") return;
+        handleResetPassword();
+        return;
+      }
+    } else {
+      // Normal login flow: require both email and password valid
+      if (!areAllFieldsValid) return;
+      handleLogin();
+    }
+};
+
 return (
         <>
 
@@ -242,7 +278,7 @@ return (
           </div>
 
           {/* Login and Forgot password field */}
-          <form className="form" style={{gap : isForgotPassword ? '0.5rem' : '0rem' }} onSubmit={(e)=>e.preventDefault()}>
+          <form className="form" style={{gap : isForgotPassword ? '0.5rem' : '0rem' }} onSubmit={(e)=>e.preventDefault()} onKeyDown={handleKeyDown}>
             {/* Email Field */}
             <InputField htmlFor="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} id="email" placeholder="Enter your email" labelVal="Email" styleVal={{ display: forgotUserExists ? 'none':'block' }}/>
             <p className="email-error error" style={{ display: isOtpSubmitted && forgotUserExists ? 'none' : 'block' }}>{emailError}</p>

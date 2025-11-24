@@ -326,6 +326,9 @@
   .popupoptions li {
     font-size: 0.85rem;
   }
+  .logo img{
+    height: 40px;
+  }
 }
 
 /* Mobile Portrait */
