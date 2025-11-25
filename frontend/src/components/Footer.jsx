@@ -9,19 +9,20 @@ const Footer = ({ darkMode ,navigationLinks=[],legalLinks=[] }) => {
       <div className="footer_text_part">
         <div className="footer_upper_text_part">
           <div className="footer_first_column column_div">
-            <div className="footer_web">
-              
+            <div className="footer_web footer_web_desktop">
                 <img src={logofooter} alt="Website logo" />
             </div>
             <div className="textcolumn">
               <div className="logotext">
+                <img className="footer_web_mobile" src={logofooter} alt="Website logo" />
                 <img src={logotext} alt="InsightStox text logo" />
               </div>
               <div className="tagline_text">
+              <img  className="gitlogo_mobile"src={github_logo} alt="Github logo" />
                 <p><>Analyze Smarter,<br/>Invest Better</></p>
               </div>
              
-              <div className="github_logo">
+              <div className="gitlogo_dekstop">
                 <img src={github_logo} alt="Github logo" />
               </div>
           </div>
