@@ -54,8 +54,10 @@ const  Watchlist= () => {
     try{
       const updatedData = watchlistData.filter(stock => stock.symbol !== symbol);
       const updatedFiltered = filteredData.filter(stock => stock.symbol !== symbol);
+      const updatedSearch = searchData.filter(stock => stock.symbol !== symbol);
       setwatchlistData(updatedData);
       setFilteredData(updatedFiltered);
+      setSearchData(updatedSearch);
       await axios.delete(`${BACKEND_URL}/api/v1/dashboard/removeFromWatchlist?symbol=${symbol}`);
     }
     catch(err){
@@ -105,7 +107,7 @@ const  Watchlist= () => {
     setFilters(prev => ({
       ...prev,
       sectors: prev.sectors.includes(sector)
-        ? prev.sectors.filter(s => s !== sector)
+      ? prev.sectors.filter(s => s !== sector)
         : [...prev.sectors, sector]
     }));
   };
@@ -256,7 +258,7 @@ const handleSearch = (value) => {
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
               />
-              <button className="filter-btn"  onClick={() => setIsFilterOpen(true)}> 
+              <button className="filter-btn" aria-label="Open Filters" onClick={() => setIsFilterOpen(true)}> 
                 <img src={filterIcon} alt="filter-icon" />
               </button>
             
@@ -282,22 +284,22 @@ const handleSearch = (value) => {
                     <tr key={`skeleton-${idx}`}>
                       <td>
                         <div className="company-cell">
-                          <div className="skeleton" style={{ width: '60%', height: 14 }}></div>
-                          <div className="skeleton" style={{ width: '36%', height: 14, marginTop: 6 }}></div>
+                          <div className="skeleton " data-testid="skeleton"style={{ width: '60%', height: 14 }}></div>
+                          <div className="skeleton" data-testid="skeleton"style={{ width: '36%', height: 14, marginTop: 6 }}></div>
                         </div>
                       </td>
                       <td>
-                        <div className="skeleton" style={{ width: '40%', height: 14 }}></div>
+                        <div className="skeleton" data-testid="skeleton"style={{ width: '40%', height: 14 }}></div>
                       </td>
                       <td>
-                        <div className="skeleton" style={{ width: '40%', height: 14 }}></div>
+                        <div className="skeleton" data-testid="skeleton"style={{ width: '40%', height: 14 }}></div>
                         <div className="skeleton change-cell-after" style={{ width: '60%', height: 12, marginTop: 6 }}></div>
                       </td>
                       <td>
-                        <div className="skeleton" style={{ width: '60%', height: 14 }}></div>
+                        <div className="skeleton" data-testid="skeleton"style={{ width: '60%', height: 14 }}></div>
                       </td>
                       <td>
-                        <div className="skeleton" style={{ width: 64, height: 28, borderRadius: 9999 }}></div>
+                        <div className="skeleton" data-testid="skeleton"style={{ width: 64, height: 28, borderRadius: 9999 }}></div>
                       </td>
                     </tr>
                   ))
@@ -358,12 +360,18 @@ const handleSearch = (value) => {
 
       {/* Filter Modal */}
       {isFilterOpen && (
-        <div className="filter-modal-overlay overlay" onClick={() => setIsFilterOpen(false)}>
+        <div className="filter-modal-overlay overlay" role="button" aria-label="Close Filters Overlay" onClick={() => setIsFilterOpen(false)}>
           <div className="filter-modal" onClick={(e) => e.stopPropagation()}>
             <div className="filter-modal-header">
               <h2>Filter Options</h2>
-              <i className="pi pi-times close-btn" onClick={() => setIsFilterOpen(false)}></i>
-            </div>
+                  <button
+                    aria-label="Close Filters"
+                    className="close-btn"
+                    onClick={() => setIsFilterOpen(false)}
+                  >
+                    <i className="pi pi-times"></i>
+                  </button>            
+                  </div>
 
             <div className="filter-modal-content">
               {/* Daily Change */}
@@ -429,10 +437,11 @@ const handleSearch = (value) => {
                 <div className="filter-section-title">Price Range</div>
                 <div className="price-range-inputs">
                       <div className="price-input-group">
-                        <label>From</label>
-                        <input 
-                          type="number" 
+                         <label htmlFor="price-from">From</label>
+                        <input
+                          id="price-from"
                           placeholder="10"
+                          type="number"
                           value={filters.priceFrom}
                           onChange={(e) => {
                             const value = e.target.value;
@@ -448,17 +457,18 @@ const handleSearch = (value) => {
                       </div>
 
                       <div className="price-input-group">
-                        <label>Upto</label>
-                        <input 
-                          type="number" 
-                          placeholder="439"
-                          value={filters.priceUpto}
+                          <label htmlFor="price-upto">Upto</label>
+                          <input
+                            id="price-upto"
+                            placeholder="439"
+                            type="number"
+                            value={filters.priceUpto}
                           onChange={(e) => {
                             const value = e.target.value;
                             setFilters({ ...filters, priceUpto: value });
 
                             if (filters.priceFrom && Number(value) < Number(filters.priceFrom)) {
-                              setPriceError('“Upto” cannot be less than “From”.');
+                              setPriceError('“From” cannot be greater than “Upto”.');
                             } else {
                               setPriceError('');
                             }

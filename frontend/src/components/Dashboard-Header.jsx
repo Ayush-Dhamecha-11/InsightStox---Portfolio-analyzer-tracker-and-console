@@ -97,12 +97,10 @@ const DashboardHeader = ({ isWatchlistPage = false, onAddToWatchlist = null }) =
     const handleAddStock = async (e, symbol) => {
       
       e.stopPropagation();
-      if (onAddToWatchlist) {
         await onAddToWatchlist(symbol);
         setIsSearchActive(false);
         setSearchResults([]);
        setQuery('');
-      }
     };
 
   useEffect(() => {
