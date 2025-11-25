@@ -277,9 +277,9 @@ export const HelpSupport = () => {
  <div className="footer-div">
                 <Footer darkMode={darkMode}
                     navigationLinks={[
-                        { text: "Portfolio", href: "#" },
-                        { text: "AI Insights", href: "#" },
-                        { text: "Watchlist", href: "#" },
+                        { text: "Portfolio", href: "/portfolio" },
+                        { text: "AI Insights", href: "/ai-insight" },
+                        { text: "Watchlist", href: "/watchlist" },
                         { text: "Compare Stocks", href: "#" },
 
                     ]}
