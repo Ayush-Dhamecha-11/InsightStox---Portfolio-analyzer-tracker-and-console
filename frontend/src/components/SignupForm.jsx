@@ -166,6 +166,24 @@ useEffect(() => {
 
     return () => clearInterval(interval);
   }, [timer]);
+  
+  // Handle Enter key: submit only when fields are valid for current flow
+  const handleKeyDown = (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+
+    if (isOtpSent) {
+      if (otp.trim() === "") return;
+      setTitleError("");
+      handleRegister();
+      return;
+    }
+
+    // If not OTP flow, trigger OTP generation only when all fields valid
+    if (!areAllFieldsValid) return;
+    setTitleError("");
+    handleOtpGeneration();
+  };
 
 /*----------------------------------- JSX --------------------------------------------------------------------- */
     return (
@@ -181,7 +199,7 @@ useEffect(() => {
           </div>
         
         {/* SignUp form Division */}
-      <form className="form" style={{ gap: isOtpSent ? '0.3rem' : '0rem' }} onSubmit={(e)=>{e.preventDefault();}}>
+      <form className="form" style={{ gap: isOtpSent ? '0.3rem' : '0rem' }} onSubmit={(e)=>{e.preventDefault();}} onKeyDown={handleKeyDown}>
           {/* Input Fields for Name */}
         <InputField htmlFor="name" type="text" value={name} onChange={(e) => setName(e.target.value)} id="name" placeholder="Enter your full name" labelVal="Full Name" styleVal={{ display: isOtpSent ? 'none' : 'block' }} />
           <p style={{ display: isOtpSent ? 'none' : 'block' }} className="name-error error">{nameError}</p>
