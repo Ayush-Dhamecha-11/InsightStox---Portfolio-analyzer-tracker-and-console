@@ -56,11 +56,12 @@ const MyHoldings = () => {
     );
   }
 
-  // Normal Render
-  return (
-    <div>
-      <div className="card holdings-card">
-        <h2 className="header-title">My Holdings</h2>
+
+return (
+  <div className="myholdings-wrapper">
+    <div className="card holdings-card">
+      <h2 className="header-title">My Holdings</h2>
+      <div className="table-wrapper">
         <table>
           <thead>
             <tr>
@@ -83,10 +84,13 @@ const MyHoldings = () => {
             ))}
           </tbody>
         </table>
-        <p className="see-more">See More →</p>
       </div>
+
+      <p className="see-more">See More →</p>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default MyHoldings;

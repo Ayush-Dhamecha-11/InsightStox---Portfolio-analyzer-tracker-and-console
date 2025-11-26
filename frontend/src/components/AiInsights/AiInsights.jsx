@@ -89,24 +89,26 @@ const handlePortfolioAnalysis = async () => {
     handlePortfolioAnalysis();
   },[]);
   
-  return (
-    <div>
-      <div className="card insights-card">
-            <h2 className="ai-title">AI - Powered Insights</h2>
-            <div className="insights">
-              {formattedInsights.length > 0 ? (
-                formattedInsights.map((val, index) => (
-                  <p key={index} className="insight-item">{val}</p>
-                ))
-              ) : (
-                <p>Loading portfolio insights...</p>
-              )}
-            </div>
-            <p className="view-all">View all Insights →</p>
-          </div>
+return (
+  <div className="aiinsights-wrapper">
+    <div className="card insights-card">
+      <h2 className="ai-title">AI - Powered Insights</h2>
 
+      <div className="insights">
+        {formattedInsights.length > 0 ? (
+          formattedInsights.map((val, index) => (
+            <p key={index} className="insight-item">{val}</p>
+          ))
+        ) : (
+          <p>Loading portfolio insights...</p>
+        )}
+      </div>
+
+      <p className="view-all">View all Insights →</p>
     </div>
-  )
+  </div>
+);
+
 }
 
 export default AiInsights
