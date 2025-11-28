@@ -12,7 +12,8 @@ import { useParams } from "react-router-dom";
 import { useAppContext } from "../context/AppContext.jsx";
 import { formatDate, formatLargeNumber, formatPercentage, formatSmallNumber, roundTo } from "../utils/dataCleaningFuncs.jsx";
 import { useNavigate } from "react-router-dom";
-
+import Swal from "sweetalert2";
+import "../components/alert.css";
 export const StockDetails = () => {
     const BASE_URL = import.meta.env.VITE_BACKEND_LINK;
     const [darkMode, setDarkMode] = useState(true);
@@ -207,7 +208,19 @@ export const StockDetails = () => {
     const handleWatchlist = async () => {
         try {
             await axios.post(`${BASE_URL}/api/v1/dashBoard/addToWatchlist`, {symbol: symbol}, { withCredentials: true });
-            alert("Added to watchlist");
+            Swal.fire({
+  toast: true,
+  position: "top",
+  icon: "success",
+  title: `${symbol} added to watchlist successfully!`,
+  iconColor: "#33ff57",
+  background: "#1a1a1a",
+  showConfirmButton: false,
+  timer: 3000,
+  customClass: {
+    popup: "small-toast"
+  }
+});
         }
         catch (error) {
             console.error("Error in adding the stock to watchlist:", error);

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./StockAction.css";
-
+import Swal from "sweetalert2";
+import "./alert.css";
 const StockAction = ({ action, handler, symbol, currPrice, priceChange, pricePercentChange, onClose }) => {
 
     const BASE_URL = import.meta.env.VITE_BACKEND_LINK;
@@ -22,14 +23,40 @@ const StockAction = ({ action, handler, symbol, currPrice, priceChange, pricePer
     }
 
     const handleSubmit = async () => {
-        if (!quantity || !Number.isInteger(Number(quantity))){ 
-            alert("Invalid quantity entered.");    
+        if (!quantity || !Number.isInteger(Number(quantity))){           
+           Swal.fire({
+            toast: true,
+            position: "top",
+            icon: "error",
+            title: "Please enter a valid integer quantity.",
+            iconColor: "#ff4b4b",
+            background: "#1a1a1a",
+            showConfirmButton: false,
+            timer: 3000,
+            customClass: {
+                popup: "small-toast"
+            }
+            });
+            // alert("Invalid quantity entered.");    
             return;
         }
     
         try {
             await axios.post(`${BASE_URL}/api/v1/dashBoard/addTransaction`, { symbol: symbol, quantity: Number(quantity), transaction_type: action }, { withCredentials: true });
-            alert(`Transaction done of amount: ${currPrice * quantity}`);
+            Swal.fire({
+  toast: true,
+  position: "top",
+  icon: "success",
+  title: `Transaction done of amount: ${(currPrice * quantity).toFixed(2)}`,
+  iconColor: "#33ff57",
+  background: "#1a1a1a",
+  showConfirmButton: false,
+  timer: 3000,
+  customClass: {
+    popup: "small-toast"
+  }
+});
+            // alert(`Transaction done of amount: ${currPrice * quantity}`);
         } catch (err) {
             console.error("Error checking holding:", err);
         }
