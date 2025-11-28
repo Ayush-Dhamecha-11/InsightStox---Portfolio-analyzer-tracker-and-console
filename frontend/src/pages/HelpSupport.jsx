@@ -82,7 +82,7 @@ const helpContent = {
   }
 };
 
-function HelpTopicModal({ topic, onNavigate, onClose }) {
+export function HelpTopicModal({ topic, onNavigate, onClose }) {
  
   useEffect(() => {
     document.body.classList.add("modal-open");
