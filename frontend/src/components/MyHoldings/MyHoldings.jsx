@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./MyHoldings.css";
-
+import {Link} from 'react-router-dom'
 //Base backend URL
 const BACKEND_URL = import.meta.env.VITE_BACKEND_LINK;
 const HOLDINGS_API = `${BACKEND_URL}/api/v1/dashboard/stockSummary`;
@@ -85,8 +85,9 @@ return (
           </tbody>
         </table>
       </div>
-
-      <p className="see-more">See More →</p>
+      <p className="view-all">
+                <Link to="/portfolio">See More →</Link>
+            </p>
     </div>
   </div>
 );

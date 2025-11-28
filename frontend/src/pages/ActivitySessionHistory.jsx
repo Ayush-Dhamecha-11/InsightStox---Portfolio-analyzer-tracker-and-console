@@ -4,7 +4,8 @@ import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import { Sidebar } from "../components/Sidebar.jsx";
 import axios from "axios";
-
+import { useAppContext } from "../context/AppContext.jsx";
+import { useNavigate } from "react-router-dom";
 // Reusable hook for See More
 const useSeeMore = (initialData, limit) => {
     const [fullData, setFullData] = useState(initialData);
@@ -23,6 +24,7 @@ const useSeeMore = (initialData, limit) => {
 
 export const ActivitySessionHistory = () => {
     const [darkMode, setDarkMode] = useState(true);
+    
     axios.defaults.withCredentials = true;
 
     const [userInfo, setUserInfo] = useState({
@@ -162,6 +164,29 @@ export const ActivitySessionHistory = () => {
 
         fetchAllData();
     }, []);
+
+    //check auth every 10 seconds
+    const navigate = useNavigate();
+      const { ensureAuth } = useAppContext();
+    
+      useEffect(() => {
+                 // Run an initial check: this page is an auth/home page, so pass true
+              (async () => {
+                try {
+                  await ensureAuth(navigate, false);
+                } catch (e) {
+                  console.error("ensureAuth initial check failed:", e);
+                }
+              })();
+        
+              const intervalId = setInterval(() => {
+                ensureAuth(navigate, false).catch((e) => console.error(e));
+              }, 10000);
+        
+              return () => {
+                clearInterval(intervalId);
+              };
+        },  [navigate, ensureAuth]);
 
     // Sign out single device
     const handleSignOut = async (sessionId) => {

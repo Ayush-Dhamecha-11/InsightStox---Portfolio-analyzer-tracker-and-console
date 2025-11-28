@@ -7,7 +7,7 @@ import { Sidebar } from "../components/Sidebar.jsx";
 import Toggle from "../components/Toggle.jsx";
 import GoToArrow from "../assets/routeicon.svg";
 import { useAppContext } from "../context/AppContext";
-
+import { useNavigate } from "react-router-dom";
 // --- START: MODAL COMPONENT ---
 // 💡 This Modal is designed to close when clicking the close button or clicking the background overlay.
 const PolicyModal = ({ title, content, isOpen, onClose }) => {
@@ -63,7 +63,28 @@ export const DataPrivacy = () => {
     const [deleteRequested, setDeleteRequested] = useState(false);
     // 🟢 New state to track which modal is open ('privacy', 'terms', or null)
     const [activeModal, setActiveModal] = useState(null);
-
+    const navigate = useNavigate();
+      const { ensureAuth } = useAppContext();
+    
+      useEffect(() => {
+                 // Run an initial check: this page is an auth/home page, so pass true
+              (async () => {
+                try {
+                  await ensureAuth(navigate, false);
+                } catch (e) {
+                  console.error("ensureAuth initial check failed:", e);
+                }
+              })();
+        
+              const intervalId = setInterval(() => {
+                ensureAuth(navigate, false).catch((e) => console.error(e));
+              }, 10000);
+        
+              return () => {
+                clearInterval(intervalId);
+              };
+        },  [navigate, ensureAuth]);
+        
     // 🟢 NEW HANDLER: Opens the specified modal
     const openModal = (type) => {
         setActiveModal(type);
