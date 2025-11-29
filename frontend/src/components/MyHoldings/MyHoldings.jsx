@@ -85,9 +85,6 @@ return (
           </tbody>
         </table>
       </div>
-      <p className="view-all">
-                <Link to="/portfolio">See More →</Link>
-            </p>
     </div>
   </div>
 );

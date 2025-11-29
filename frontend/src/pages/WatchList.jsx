@@ -12,7 +12,7 @@ const Watchlist_API = `${BACKEND_URL}/api/v1/dashboard/displayWatchlist`;
 
 
 const  Watchlist= () => {
-  const { darkMode, setDarkMode,setIsSearchActive} = useAppContext();
+  const { darkMode, setDarkMode, setIsSearchActive, ensureAuth, userDetails} = useAppContext();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [priceError, setPriceError] = useState('');
   const [watchlistData, setwatchlistData] = useState([]);
@@ -93,7 +93,6 @@ const  Watchlist= () => {
     sortBy: ''
   });
 
-  const { ensureAuth } = useAppContext();
 
   useEffect(() => {
              // Run an initial check: this page is an auth/home page, so pass true
@@ -252,12 +251,8 @@ const handleSearch = (value) => {
 
   return (
     <div className="watchlist">
-      <Navbar 
-        darkMode={darkMode} 
-        setDarkMode={setDarkMode} 
-        pageType="dashboard"
-        profileData={{ name: "Ayush Dhamecha", email: "ma**@gmail.com" }} 
-      />
+      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} pageType="watchlist" 
+      profileData={{name: userDetails?.name?.split(" ")[0] || "Guest",email: userDetails?.email || "N/A"}}/>
       
       <DashboardHeader 
         darkMode={darkMode} 

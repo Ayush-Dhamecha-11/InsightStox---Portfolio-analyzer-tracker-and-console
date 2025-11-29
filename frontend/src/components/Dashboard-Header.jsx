@@ -87,12 +87,6 @@ const DashboardHeader = ({ isWatchlistPage = false, onAddToWatchlist = null }) =
         setSearchResults([]);
       }
     };
-    const handleStockClick = (symbol) => {
-      navigate(`/stockdetails/${symbol}`);
-      setIsSearchActive(false);
-      setQuery('');
-      setSearchResults([]);
-    };
     
     const handleAddStock = async (e, symbol) => {
       
@@ -192,8 +186,6 @@ const DashboardHeader = ({ isWatchlistPage = false, onAddToWatchlist = null }) =
                 <React.Fragment key={stockSymbol || index}>
                   <div 
                     className="d-stock-info"
-                    onClick={() => stockSymbol && handleStockClick(stockSymbol)}
-                    style={{ cursor: stockSymbol ? 'pointer' : 'default' }}
                   >
                     <div className="d-stock-header">
                       <span className="d-stock-name">
@@ -270,7 +262,6 @@ const DashboardHeader = ({ isWatchlistPage = false, onAddToWatchlist = null }) =
                   <li
                     key={item.symbol}
                     className="result-item"
-                    onClick={() => handleStockClick(item.symbol)}
                     role="button"
                     tabIndex={0}
                   >

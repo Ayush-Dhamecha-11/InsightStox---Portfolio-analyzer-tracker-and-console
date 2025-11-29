@@ -504,9 +504,6 @@
     .backToHome:hover {
         box-shadow: 1px 1px 8px #00C853;
     }
-    .right_inner_div {
-        justify-content: flex-start; 
-    }
 
     .auth_form_wrapper {
         width: 100%;

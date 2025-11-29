@@ -7,7 +7,7 @@ const Toggle = ({ value, onChange }) => {
       <input
         type="checkbox"
         checked={value}
-        onChange={(e) => onChange(e.target.checked)}
+        onChange={(e) => onChange && onChange(e.target.checked)} // Added safety check
       />
       <span className="slider"></span>
     </label>

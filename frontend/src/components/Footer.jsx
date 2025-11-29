@@ -1,28 +1,53 @@
-import React from "react";
+import React, { useState,useEffect } from "react";
 import github_logo from "../assets/github_logo.png";
+import { PolicyModal } from "./PolicyModal";
+import { PrivacyPolicy } from './PrivacyPolicy';
+import { TermsCondition } from './TermsCondition';
 import "./Footer.css";
 import logofooter from "../assets/logofooter-navbar.svg";
 import logotext from "../assets/logotext.svg";
+
 const Footer = ({ darkMode ,navigationLinks=[],legalLinks=[] }) => {
+    const [activeModal, setActiveModal] = useState(null);
+    
+  const openModal = (type) => {
+    setActiveModal(type);
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+  };
+    useEffect(() => {
+          const onEsc = (e) => {
+              if (e.key === 'Escape') {
+               setActiveModal(null);   
+              }
+          };
+  
+          window.addEventListener('keydown', onEsc);
+  
+          return () => window.removeEventListener('keydown', onEsc);
+      }, []);
+
   return (
+    <>
     <div className="footer_div" >
       <div className="footer_text_part">
         <div className="footer_upper_text_part">
           <div className="footer_first_column column_div">
-            <div className="footer_web footer_web_desktop">
+            <div className="footer_web">
+              
                 <img src={logofooter} alt="Website logo" />
             </div>
             <div className="textcolumn">
               <div className="logotext">
-                <img className="footer_web_mobile" src={logofooter} alt="Website logo" />
                 <img src={logotext} alt="InsightStox text logo" />
               </div>
               <div className="tagline_text">
-              <img  className="gitlogo_mobile"src={github_logo} alt="Github logo" />
                 <p><>Analyze Smarter,<br/>Invest Better</></p>
               </div>
              
-              <div className="gitlogo_dekstop">
+              <div className="github_logo">
                 <img src={github_logo} alt="Github logo" />
               </div>
           </div>
@@ -33,8 +58,8 @@ const Footer = ({ darkMode ,navigationLinks=[],legalLinks=[] }) => {
               <h2>NAVIGATION</h2>
             </div>
             {navigationLinks.map((link) => (
-              <div className={`${link.className || "nav_link"}`}>
-                <a key={link.text} href={link.href}>{link.text}</a>
+              <div key={link.text} className={`${link.className || "nav_link"}`}>
+                <a  href={link.href}>{link.text}</a>
               </div>
             ))}
           </div>
@@ -44,9 +69,19 @@ const Footer = ({ darkMode ,navigationLinks=[],legalLinks=[] }) => {
               <h2>LEGAL</h2>
             </div>
              {legalLinks.map((link) => (
-              <div className={`${link.className || "nav_link"}`}>
-                <a key={link.text} href={link.href}>{link.text}</a>
-              </div>
+              <div className={`${link.className || "nav_link"}`} key={link.text}>
+                {link.text === "Privacy Policy" ? (
+              <a onClick={() => openModal("privacy")} style={{ cursor: "pointer" }}>
+                {link.text}
+              </a>
+                ) : link.text === "Terms Of Service" ? (
+              <a onClick={() => openModal("terms")} style={{ cursor: "pointer" }}>
+                {link.text}
+              </a>
+              ) : (
+              <a href={link.href}>{link.text}</a>
+          )}
+          </div>
             ))}
           </div>
         </div>
@@ -57,7 +92,22 @@ const Footer = ({ darkMode ,navigationLinks=[],legalLinks=[] }) => {
         </div>
       </div>
     </div>
+  
+<PolicyModal
+  title="Privacy Policy"
+  content={<PrivacyPolicy />}
+  isOpen={activeModal === "privacy"}
+  onClose={closeModal}
+/>
+
+<PolicyModal
+  title="Terms and Conditions"
+  content={<TermsCondition />}
+  isOpen={activeModal === "terms"}
+  onClose={closeModal}
+/>
+  </>
   );
 };
 
-export default Footer;
+export default Footer;  

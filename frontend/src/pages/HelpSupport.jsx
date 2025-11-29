@@ -277,8 +277,8 @@ export const HelpSupport = () => {
 
   return (
     <div className="HelpSupportLayout">
-       <Navbar darkMode={darkMode} setDarkMode={setDarkMode} pageType="help-support"
-                profileData={{ name: userInfo?.name, email: userInfo?.email, profileImage: userInfo?.profileImage }} />
+        <Navbar darkMode={darkMode} setDarkMode={setDarkMode} pageType="help-support" 
+        profileData={{name: userInfo?.name?.split(" ")[0] || "Guest",email: userInfo?.email || "N/A"}}/>
       
       <div className="HelpSupportBody">
        

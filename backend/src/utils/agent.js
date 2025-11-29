@@ -378,7 +378,7 @@ const workFlow = new StateGraph(MessagesAnnotation)
 
 
 /** ---------------------------------------------------------Compile Workflow------------------------------------------------------------------------------------- */
-const app =  workFlow.compile({debug: true ,checkpointer: checkPointer});
+const app =  workFlow.compile({debug: true ,checkpointer: checkPointer, maxHistoryMessages: 4});
 
 
 
