@@ -128,6 +128,13 @@ const DashboardHeader = ({ isWatchlistPage = false, onAddToWatchlist = null }) =
     return () => window.removeEventListener('keydown', onEsc);
   }, []);
 
+  const handleStockClick = (symbol) => {
+      navigate(`/stockdetails/${symbol}`);
+      setIsSearchActive(false);
+      setQuery('');
+      setSearchResults([]);
+    };
+
   // Error state
   if (error)
     return (
@@ -262,6 +269,7 @@ const DashboardHeader = ({ isWatchlistPage = false, onAddToWatchlist = null }) =
                   <li
                     key={item.symbol}
                     className="result-item"
+                    onClick={() => handleStockClick(item.symbol)}
                     role="button"
                     tabIndex={0}
                   >
