@@ -11,3 +11,5 @@ The platform is around three core aspects: portfolio management, intelligent sug
 In addition to portfolio features, InsightStox provides a highly visual dashboard with interactive charts and reports, making complex financial information accessible and easier to understand. A stock comparison module further allows users to compare two or more options side by side, offering transparency in decision-making. To ensure security and reliability, the system incorporates secure authentication, and compliance with financial data protection standards. The application is designed to quantify stock market data, and AI computation in real time.  
 
 Overall, InsightStox is visioned as a bridge between investors and technology, featuring financial intelligence by providing a smart, secure, and engaging platform. The system’s goal is to encourage informed, confident, and data-backed investment decisions in a dynamic stock market environment. 
+
+-- YouTube video link of Demonstration of website: https://youtu.be/93mjWPn2CVE?si=H-PY2bFJqtWPchnB
